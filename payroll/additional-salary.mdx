@@ -1,0 +1,93 @@
+---
+title: "Additional salary"
+description: "Process one-time or recurring supplemental payments, incentives, retention bonuses, and arrears outside the standard salary structure."
+---
+
+An **Additional Salary** lets you add or deduct an amount from an employee's pay for a specific period without modifying their underlying Salary Structure. Use it for bonuses, incentives, arrears, advance recoveries, and any other non-standard pay adjustments.
+
+## When to use additional salary
+
+| Scenario | Use additional salary | Modify salary structure |
+|---|---|---|
+| One-time performance bonus | Yes | No |
+| Recurring transport allowance for 3 months | Yes (recurring) | No |
+| Permanent increase to a component for all employees | No | Yes |
+| Festival bonus this month | Yes | No |
+| Loan advance recovery | Yes (via Employee Advance) | No |
+
+## Creating an additional salary
+
+Go to **Payroll → Additional Salary → New**.
+
+| Field | Description |
+|---|---|
+| **Employee** | The employee to receive or owe the amount. |
+| **Salary Component** | The earning or deduction component to use. The employee must have an active Salary Structure Assignment. |
+| **Type** | Auto-populated from the selected component (`Earning` or `Deduction`). |
+| **Amount** | The amount to add or deduct. Must be greater than zero. |
+| **Is Recurring** | When enabled, the additional salary applies across a date range (From Date / To Date) and is included in every salary slip that falls within that range. |
+| **Payroll Date** | For one-time payments, the specific payroll date on which this amount is included. |
+| **From Date / To Date** | For recurring payments, the date range. The amount is prorated for any slip period that partially overlaps this range. |
+| **Overwrite Salary Structure Amount** | When enabled, the additional salary replaces the structure amount for this component instead of adding to it. The component must already exist in the active salary structure. |
+| **Deduct Full Tax on Selected Payroll Date** | Forces the full projected annual tax to be deducted in the single pay period instead of spreading it. Useful for one-time bonuses that would otherwise shift the tax projection. |
+
+<Warning>
+Only one Additional Salary with **Overwrite Salary Structure Amount** enabled can exist per component per employee per date. Duplicate overwrite records will be rejected on submission.
+</Warning>
+
+## Recurring additional salary
+
+When **Is Recurring** is checked:
+
+- Set **From Date** and **To Date** to define the active window.
+- Each salary slip whose period overlaps the window will include a prorated amount:
+
+```python
+# Amount per day
+amount_per_day = total_amount / total_days_in_range
+
+# Days of overlap between the slip period and the additional salary range
+overlapping_days = min(slip_end, range_end) - max(slip_start, range_start) + 1
+
+# Amount included in this slip
+slip_amount = amount_per_day * overlapping_days
+```
+
+- The system prevents two recurring additional salaries for the same component and employee from overlapping in date.
+
+## Employee incentive
+
+**Employee Incentive** is a dedicated doctype for ad-hoc performance payments. Go to **Payroll → Employee Incentive → New**.
+
+An incentive record maps to an Additional Salary under the hood. Fill in:
+
+- **Employee** — recipient
+- **Incentive Amount** — the bonus amount
+- **Payroll Date** — when it should appear in the pay slip
+- **Salary Component** — the earning component to use (typically an `Incentive` or `Bonus` component)
+
+Submitting the incentive creates the corresponding Additional Salary automatically.
+
+## Retention bonus
+
+**Retention Bonus** is similar to Employee Incentive but is designed for scheduled retention payments. Go to **Payroll → Retention Bonus → New**. The record links to the employee and specifies a bonus payment date and amount.
+
+## Arrear processing
+
+Arrears arise when a pay revision is applied retroactively. Frappe HR handles arrears in two ways:
+
+### Manual arrear via additional salary
+
+Create an Additional Salary with the difference amount and set **Is Arrear** (or use the arrear component designated in the Salary Component with **Arrear Component** enabled). Submit it with a payroll date in the current period.
+
+### Automatic arrear via payroll correction
+
+Use **Payroll Correction** to automatically calculate and post arrear differences when LWP days were incorrectly deducted in a previous month. The system computes the earning and deduction differences and creates the corresponding Additional Salary records. See [Payroll entry — Payroll correction](/payroll/payroll-entry#payroll-correction) for details.
+
+## Integration with employee advance
+
+When an Additional Salary references an **Employee Advance** (`ref_doctype = Employee Advance`), submitting the record increments the `return_amount` on the advance. Cancelling it decrements the return amount and resets the advance status accordingly.
+
+## Integration with gratuity
+
+When a Gratuity record has **Pay via Salary Slip** enabled, submitting it automatically creates an Additional Salary for the gratuity amount. This is included in the employee's next salary slip as an earning. See [Gratuity](/payroll/gratuity) for details.

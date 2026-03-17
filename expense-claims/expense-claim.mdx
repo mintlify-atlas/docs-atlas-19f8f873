@@ -1,0 +1,126 @@
+---
+title: "Expense claims"
+description: "Submit, approve, and reimburse employee expense claims with line-item expense types, taxes, and advance reconciliation."
+---
+
+An Expense Claim records expenses incurred by an employee on behalf of the company and tracks the reimbursement process through approval and payment.
+
+## Creating an expense claim
+
+<Steps>
+  <Step title="Open a new Expense Claim">
+    Go to **HR > Expense Claims > Expense Claim > New**.
+  </Step>
+  <Step title="Fill in the header details">
+    | Field | Description |
+    |---|---|
+    | **Employee** | The employee who incurred the expenses. |
+    | **Posting Date** | Date of the claim (defaults to today). |
+    | **Department** | Auto-fetched from the employee record; must belong to the same company. |
+    | **Company** | The company the claim is filed against. |
+    | **Expense Approver** | The person authorised to approve this claim. The document is automatically shared with the approver on save. |
+    | **Currency** | Claim currency; an exchange rate is applied if different from the company currency. |
+  </Step>
+  <Step title="Add expense lines">
+    In the **Expenses** table, add one row per expense item:
+
+    | Column | Description |
+    |---|---|
+    | **Expense Date** | Date the expense was incurred. |
+    | **Expense Claim Type** | Category of the expense (e.g. Travel, Meals). Determines which GL account is debited. |
+    | **Description** | Brief description of the expense. |
+    | **Amount** | Amount claimed by the employee. |
+    | **Sanctioned Amount** | Amount approved by the approver (may differ from claimed). |
+    | **Cost Center** | Required for GL posting; defaults from the document-level cost center. |
+    | **Project / Task** | Optional project or task to which the expense is charged. |
+
+    Attach scanned receipts or invoices using the **Attachments** section.
+  </Step>
+  <Step title="Add taxes and charges (optional)">
+    Use the **Taxes and Charges** table to include taxes such as GST that are part of the expense. Each tax row requires an **Account Head** and a **Tax Amount**. Tax GL entries are posted against the specified account head on submission.
+  </Step>
+  <Step title="Link employee advances (optional)">
+    If the employee received an advance for this trip, add it in the **Advance Payments** table. The system calculates how much of the advance is allocated against this claim and reduces the amount payable accordingly.
+  </Step>
+  <Step title="Submit">
+    Save and submit the claim. Submitting requires the **Approval Status** to be set to **Approved** or **Rejected** — the system throws an error if the claim is still in Draft approval state.
+
+    A **Payable Account** must be set before submitting an unpaid claim.
+  </Step>
+</Steps>
+
+## Expense Claim Type configuration
+
+Expense Claim Types define which expense GL account is debited when a claim is approved. Configure them at **HR > Setup > Expense Claim Type**.
+
+| Field | Description |
+|---|---|
+| **Expense Claim Type** | Name of the category (e.g. "Travel", "Accommodation", "Meals"). |
+| **Description** | Optional description of what expenses belong to this type. |
+| **Accounts** | A table mapping each company to its default debit account for this expense type. |
+| **Deferred Expense Account** | Enable if expenses of this type should be deferred. |
+
+<Tip>
+Set up one Expense Claim Type per expense category and map the correct expense account per company. This ensures expenses are posted to the right ledger automatically.
+</Tip>
+
+## Approval workflow
+
+The approval process uses the `approval_status` field with the values **Draft**, **Approved**, and **Rejected**.
+
+1. After the employee submits the claim, the assigned **Expense Approver** receives a notification.
+2. The approver opens the claim, reviews each line, adjusts the **Sanctioned Amount** if needed, and sets **Approval Status** to **Approved** or **Rejected**.
+3. Only the designated expense approver (or a user with the HR Manager role) can approve.
+4. If **Prevent Self Expense Approval** is enabled in HR Settings, an employee cannot approve their own claim.
+
+<Warning>
+If no custom workflow is configured for Expense Claim, self-approval is blocked by the `prevent_self_expense_approval` setting in HR Settings. Submitting a claim still in Draft approval status raises a validation error.
+</Warning>
+
+## Claim status reference
+
+| Status | Meaning |
+|---|---|
+| **Draft** | Claim is being prepared and has not been submitted. |
+| **Submitted** | Claim is submitted; awaiting approval. |
+| **Unpaid** | Claim is approved and sanctioned amount is greater than zero, but reimbursement is pending. |
+| **Paid** | Full reimbursement has been made, or the grand total is zero because advances cover the entire claim. |
+| **Rejected** | Approver set the Approval Status to Rejected. |
+| **Cancelled** | Claim has been cancelled; GL entries are reversed. |
+
+## Payment
+
+Once an expense claim is approved, reimburse the employee through one of two methods depending on your **Accounts Settings**.
+
+### Payment Entry (default)
+
+Click **Make > Payment** from the approved Expense Claim. A Payment Entry is pre-filled with:
+- Party Type: Employee
+- Party: the employee on the claim
+- Amount: the outstanding grand total
+
+Post the Payment Entry to mark the claim as **Paid**.
+
+### Journal Entry
+
+If **Make Payment via Journal Entry** is enabled in Accounts Settings, the **Make Bank Entry** button appears instead. The resulting Journal Entry debits the Employee Payable account and credits the Bank or Cash account.
+
+<Note>
+The claim status is automatically set to **Paid** when `total_amount_reimbursed` equals `grand_total`, or when `grand_total` is zero because linked advances already cover the full sanctioned amount.
+</Note>
+
+## Reconciling advances against a claim
+
+When an employee received an Employee Advance before the trip, add it to the **Advance Payments** table on the claim:
+
+1. Open the Expense Claim and go to the **Advance Payments** section.
+2. Add the relevant Employee Advance document in the **Employee Advance** column.
+3. Enter the **Allocated Amount** — the portion of the advance being applied to this claim.
+4. On submission, the system posts a GL entry that credits the Employee Advance (Receivable) account by the allocated amount, reducing the net payable to the employee.
+5. The Employee Advance's `claimed_amount` is updated automatically.
+
+If the advance was disbursed in a different currency than the claim, the system calculates any exchange gain or loss and books it through a separate Journal Entry against the company's Exchange Gain/Loss account.
+
+## Accounting dimensions
+
+Expense Claims support ERPNext **Accounting Dimensions** (e.g. Project, Cost Center, custom dimensions). You can set dimensions at the document level or override them per expense line. Mandatory dimensions for balance sheet or P&L accounts are validated before submission.

@@ -1,0 +1,147 @@
+---
+title: "Gratuity"
+description: "Configure gratuity rules, calculate gratuity for departing employees, and integrate with Full and Final settlement."
+---
+
+Gratuity is a lump-sum payment made to an employee upon separation after completing a minimum number of years in service. Frappe HR calculates gratuity automatically based on configurable slab rules and the employee's last salary.
+
+## Gratuity rule
+
+A **Gratuity Rule** defines how gratuity is calculated: which salary components are included in the base, the minimum service years required, and the slab-based multipliers.
+
+Go to **Payroll → Gratuity Rule → New**.
+
+### Rule fields
+
+| Field | Description |
+|---|---|
+| **Calculate Gratuity Amount Based On** | `Current Slab` — applies the fraction for the slab the employee falls in. `Sum of all previous slabs` — adds up fractions for each completed slab progressively. |
+| **Work Experience Calculation Method** | `Round off Work Experience` — rounds total years to the nearest integer. `Take Exact Completed Years` — uses the floor of the total years. `Manual` — allows manual entry of work experience on the gratuity record. |
+| **Total Working Days Per Year** | Number of working days per year used to convert total days to years (default: 365). |
+| **Minimum Year for Gratuity** | Employees must complete at least this many years to be eligible. |
+| **Applicable Earnings Component** | The salary components whose amounts form the gratuity base (e.g., Basic Salary). These must be part of the employee's salary structure. |
+| **Gratuity Rule Slabs** | A table of slabs: **From Year**, **To Year**, and **Fraction of Applicable Earnings**. |
+
+### Example: Indian gratuity rule
+
+Under the Indian Payment of Gratuity Act, gratuity is 15 days of last drawn wages per year of service (minimum 5 years).
+
+| From Year | To Year | Fraction of Applicable Earnings |
+|---|---|---|
+| 0 | 0 | 0.0577 |
+
+- Calculation method: **Sum of all previous slabs**
+- Minimum years: **5**
+- Set **From Year** and **To Year** to `0` to apply a single fraction for all years of service.
+
+```python
+# Gratuity = (last basic salary / 26) * 15 * years_of_service
+# Fraction = 15/26 ≈ 0.5769 per year, but calculated as:
+# fraction_of_applicable_earnings = 15 / 26 ≈ 0.5769
+# The system computes: basic_salary * years * fraction
+```
+
+<Note>
+The fraction `15/26` approximates 15 days out of 26 working days per month. Configure this as `0.5769` in the **Fraction of Applicable Earnings** column.
+</Note>
+
+## Calculating gratuity for a departing employee
+
+<Steps>
+  <Step title="Set the relieving date">
+    Ensure the employee record has a **Relieving Date** set. This is required to calculate total working days. Go to the Employee form and update the relieving date under the **Exit** section.
+  </Step>
+  <Step title="Create a Gratuity record">
+    Go to **Payroll → Gratuity → New**. Select the employee and the gratuity rule.
+  </Step>
+  <Step title="Review calculated values">
+    On save, the system calculates:
+
+    - **Current Work Experience** — derived from date of joining and relieving date, adjusted for LWP or absent days as configured in Payroll Settings.
+    - **Amount** — computed from the last submitted salary slip, the applicable earnings components, and the slab rules.
+
+    Review both values before submitting.
+  </Step>
+  <Step title="Choose payment method">
+    - **Pay via Salary Slip** — enables the **Pay via Salary Slip** toggle. Set the **Payroll Date** and the **Salary Component** to use. Submitting creates an Additional Salary record that is picked up in the next payroll run.
+    - **Direct payment** — leave **Pay via Salary Slip** disabled. Set the **Expense Account** and **Payable Account**. Submitting creates GL entries directly.
+  </Step>
+  <Step title="Submit the gratuity record">
+    Submit the record. Depending on the payment method:
+
+    - If paying via salary slip: an Additional Salary is created with `ref_doctype = Gratuity`.
+    - If paying directly: debit/credit GL entries are posted (Gratuity Expense debit, Gratuity Payable credit).
+
+    The status moves to **Unpaid** until the full amount is settled.
+  </Step>
+</Steps>
+
+## Work experience calculation
+
+The system computes total working days as:
+
+```python
+total_working_days = (relieving_date - date_of_joining).days
+
+# Adjust for LWP (if Payroll Based On = Leave)
+total_working_days -= total_lwp_days
+
+# Or adjust for absences (if Payroll Based On = Attendance)
+total_working_days -= total_absent_days
+
+work_experience = total_working_days / total_working_days_per_year
+```
+
+LWP days are counted only for leave types with **Is LWP** (Leave Without Pay) enabled.
+
+## Gratuity amount calculation
+
+The base amount is fetched from the employee's **last submitted salary slip**. The system looks up the amounts of the components listed in **Applicable Earnings Component**.
+
+### Current slab method
+
+Applies the fraction for the single slab that the employee's work experience falls within:
+
+```python
+gratuity_amount = base_component_amount * experience * slab.fraction
+```
+
+### Sum of all previous slabs method
+
+Adds up the fraction for each completed slab, then applies the remaining years to the final slab:
+
+```python
+for slab in slabs:
+    if experience > slab.to_year:
+        gratuity_amount += (slab.to_year - slab.from_year) * base * slab.fraction
+    elif experience within slab:
+        gratuity_amount += remaining_years * base * slab.fraction
+        break
+```
+
+## Accounting entries
+
+When a gratuity record is submitted with direct payment (not via salary slip), two GL entries are created:
+
+| Account | Debit | Credit |
+|---|---|---|
+| Gratuity Expense Account | Gratuity amount | — |
+| Gratuity Payable Account | — | Gratuity amount |
+
+The payable entry is linked to the employee as the party, so you can track outstanding gratuity obligations per employee.
+
+Cancelling a submitted gratuity reverses both entries.
+
+## Integration with Full and Final settlement
+
+Gratuity is typically processed as part of the Full and Final (F&F) settlement when an employee exits. The workflow is:
+
+1. Set the employee's **Relieving Date** on the Employee master.
+2. Create and submit the **Gratuity** record.
+3. If paying via salary slip, create the final salary slip (which will include the gratuity Additional Salary).
+4. Process any outstanding leave encashment, expense claims, and loan settlements.
+5. Record the final payment to clear the gratuity payable account.
+
+<Info>
+Frappe HR does not yet have a single "Full and Final Statement" doctype. Each component (gratuity, leave encashment, final salary slip) is processed through its respective doctype and linked through the employee record.
+</Info>

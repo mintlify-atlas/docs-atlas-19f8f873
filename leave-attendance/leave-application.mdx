@@ -1,0 +1,111 @@
+---
+title: "Leave applications"
+description: "Submit, approve, and manage employee leave requests including half-days, compensatory leave, and encashment."
+---
+
+A Leave Application records an employee's request to take time off. It deducts from the Leave Allocation balance on approval and creates an attendance record marked **On Leave** for each day.
+
+Go to **HR > Leave Application > New**, or use the mobile PWA.
+
+## Submitting a leave application
+
+<Steps>
+  <Step title="Select the employee">
+    HR users can file on behalf of any employee. Employees filing for themselves see their own record pre-filled.
+  </Step>
+  <Step title="Choose the leave type">
+    Only leave types with an active allocation appear in the dropdown. The current balance is shown in the **Leave Balance** field.
+  </Step>
+  <Step title="Set the dates">
+    Enter **From Date** and **To Date**. The system calculates **Total Leave Days** excluding holidays (based on the employee's holiday list) unless the leave type has **Include Holidays Within Leaves as Leaves** enabled.
+  </Step>
+  <Step title="Add a reason">
+    Fill in the **Description** field with the reason for leave. This is displayed to the approver.
+  </Step>
+  <Step title="Set the approver">
+    The **Leave Approver** field is pre-filled from the employee's record. You can change it before submitting.
+  </Step>
+  <Step title="Save and submit">
+    Save to send the application to the approver. The status moves to **Open**. The approver receives an email and (if enabled) a PWA notification.
+  </Step>
+</Steps>
+
+### Key fields
+
+| Field | Description |
+|---|---|
+| `employee` | Link to the Employee record. |
+| `leave_type` | Category of leave being requested. |
+| `from_date` / `to_date` | Date range of the absence. |
+| `total_leave_days` | Calculated days, excluding holidays. |
+| `half_day` | Enables half-day mode (requires `half_day_date`). |
+| `half_day_date` | The specific date to mark as a half-day. |
+| `leave_approver` | The employee designated to approve this request. |
+| `status` | One of: Open, Approved, Rejected, Cancelled. |
+| `leave_balance` | Remaining balance after this application (read-only). |
+
+## Approval workflow
+
+When an application is saved, the leave approver receives an email notification. The approver can:
+
+- Open the application and click **Approve** to change the status to **Approved** and submit the document.
+- Click **Reject** to set the status to **Rejected** — the balance is not deducted.
+
+<Info>
+Frappe HR also supports custom Frappe Workflows on Leave Application. If a workflow is configured, the Approve/Reject buttons are replaced by the workflow transitions. Check **Settings > Workflow** if you need multi-level approval.
+</Info>
+
+On approval:
+1. The leave balance is deducted via a Leave Ledger Entry.
+2. Attendance records with status **On Leave** are created for each leave day.
+3. The approver and employee both receive a confirmation notification.
+
+## Half-day leaves
+
+Check **Half Day** to request a partial day off. Set **Half Day Date** to the specific date. The system deducts 0.5 days from the balance and marks that day's attendance as **Half Day**.
+
+<Note>
+Only one half-day application per date is allowed. If an employee already has a half-day application for a date, the system raises an overlap error.
+</Note>
+
+## Compensatory leave requests
+
+When an employee works on a holiday or their weekly off day, they can file a Compensatory Leave Request to earn a leave credit:
+
+1. Go to **HR > Compensatory Leave Request > New**.
+2. Select the leave type with **Is Compensatory** enabled.
+3. Enter the **Work From Date** and **Work End Date** (the dates worked).
+4. Submit — on approval, a Leave Allocation is created for the equivalent number of days worked.
+
+## Leave encashment
+
+If a leave type has **Allow Encashment** enabled, employees can convert unused balance to a cash payout:
+
+1. Go to **HR > Leave Encashment > New**.
+2. Select the employee, leave type, and leave period.
+3. The **Encashable Days** and **Encashment Amount** are calculated automatically based on the employee's daily salary and the leave type's non-encashable leaves setting.
+4. Submit — an Additional Salary record is created and picked up in the next payroll run.
+
+<Warning>
+Leave encashment is typically performed at the end of the leave period. Encashing leaves during the period reduces the balance available for future leave applications.
+</Warning>
+
+## Leave block lists
+
+A Leave Block List restricts leave applications for specific date ranges — useful for peak seasons, financial year-end, or critical project periods.
+
+<Steps>
+  <Step title="Create the block list">
+    Go to **HR > Leave Block List > New**. Add date ranges to the **Block Dates** table and optionally list employees who are **Allowed** to bypass the restriction.
+  </Step>
+  <Step title="Attach it to a department or company">
+    Set the block list on the Department or Company record. All employees in scope are subject to the restriction.
+  </Step>
+  <Step title="Behavior on application">
+    When an employee applies for leave on a blocked date, the system raises a `LeaveDayBlockedError` and prevents submission — unless the employee is in the allowed list.
+  </Step>
+</Steps>
+
+<Tip>
+Use Leave Block Lists during month-end accounting close or payroll processing windows to prevent attendance changes that would affect payroll calculations.
+</Tip>

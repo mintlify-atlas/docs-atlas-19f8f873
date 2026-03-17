@@ -1,0 +1,129 @@
+---
+title: "Marking attendance"
+description: "Mark attendance manually, upload in bulk via CSV, or integrate biometric devices using Employee Checkin logs."
+---
+
+An Attendance record captures whether an employee was Present, Absent, on Leave, or on a Half Day for a given date. Frappe HR supports three ways to create attendance records.
+
+## Manual attendance marking
+
+Go to **HR > Attendance > New** to create a single record.
+
+Key fields on an Attendance document:
+
+| Field | Description |
+|---|---|
+| `employee` | The employee this record is for. |
+| `attendance_date` | The working date. |
+| `status` | Present, Absent, Half Day, On Leave, Work From Home. |
+| `shift` | The Shift Type the employee was assigned to (if any). |
+| `in_time` / `out_time` | Actual check-in and check-out timestamps. |
+| `working_hours` | Calculated from in/out times. |
+| `late_entry` | Flagged when the check-in exceeds the shift's grace period. |
+| `early_exit` | Flagged when the check-out is before the shift's grace period. |
+| `leave_application` | Linked leave application (set automatically for On Leave records). |
+
+Submit the document to finalize the record. An employee can only have one submitted attendance per date per shift.
+
+## Bulk attendance upload
+
+To upload attendance for multiple employees at once:
+
+1. Go to **HR > Upload Attendance**.
+2. Download the CSV template.
+3. Fill in the required columns: `Employee`, `Date`, `Status` (and optionally `Shift`, `In Time`, `Out Time`).
+4. Upload the filled CSV and click **Import**.
+
+The tool validates each row and creates submitted Attendance records. Rows with errors are reported with the reason.
+
+<Note>
+The bulk upload tool skips rows where an attendance record already exists for that employee and date. To overwrite, cancel the existing record first.
+</Note>
+
+## Employee Checkin and auto-attendance
+
+Employee Checkin logs capture device check-in and check-out events. The auto-attendance processor in Shift Type reads these logs and creates Attendance records automatically.
+
+### Checkin log fields
+
+| Field | Description |
+|---|---|
+| `employee` | Link to the Employee. |
+| `time` | Exact timestamp of the check event. |
+| `log_type` | `IN` or `OUT` (required when shift uses strict log type mode). |
+| `device_id` | Optional location or device identifier. |
+| `shift` | Populated automatically by the system when the log falls inside a shift window. |
+| `skip_auto_attendance` | When set to `1`, this log is excluded from auto-attendance processing. |
+| `attendance` | Linked attendance record once auto-attendance has processed the log. |
+| `latitude` / `longitude` | GPS coordinates for geolocation-based check-in validation. |
+
+### Creating checkin logs from a biometric device
+
+Use the `add_log_based_on_employee_field` API to push checkin events from biometric hardware or third-party attendance systems:
+
+```python
+# hrms/hr/doctype/employee_checkin/employee_checkin.py
+@frappe.whitelist()
+def add_log_based_on_employee_field(
+    employee_field_value: str | int,
+    timestamp: str | datetime,
+    device_id: str | int | None = None,
+    log_type: str | None = None,
+    skip_auto_attendance: str | bool | int = 0,
+    employee_fieldname: str = "attendance_device_id",
+    latitude: str | float | None = None,
+    longitude: str | float | None = None,
+) -> Document:
+```
+
+The function looks up the Employee record using `employee_fieldname` (default: `attendance_device_id`) and the provided `employee_field_value`, then creates an Employee Checkin document.
+
+**Parameters:**
+
+| Parameter | Required | Description |
+|---|---|---|
+| `employee_field_value` | Yes | The value stored in the employee field (e.g. the badge ID). |
+| `timestamp` | Yes | Check-in time as a string: `'2025-03-17 09:15:00.000000'`. |
+| `device_id` | No | Short string identifying the device or location. |
+| `log_type` | No | `IN` or `OUT`. Required if the shift uses strict log type mode. |
+| `skip_auto_attendance` | No | Pass `1` to prevent this log from being processed by auto-attendance. |
+| `employee_fieldname` | No | The Employee field to match against (default: `attendance_device_id`). |
+| `latitude` / `longitude` | No | GPS coordinates for geolocation check-in validation. |
+
+**Example call via Frappe REST API:**
+
+```bash
+curl -X POST https://your-site.frappe.cloud/api/method/hrms.hr.doctype.employee_checkin.employee_checkin.add_log_based_on_employee_field \
+  -H "Authorization: token api_key:api_secret" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "employee_field_value": "EMP-001",
+    "timestamp": "2025-03-17 09:15:00.000000",
+    "log_type": "IN",
+    "device_id": "MAIN_GATE"
+  }'
+```
+
+<Info>
+Set the **Attendance Device ID** field on each Employee record to match the identifier your biometric hardware uses. This is the value you pass as `employee_field_value` when `employee_fieldname` is the default `attendance_device_id`.
+</Info>
+
+### Geolocation-based check-in
+
+When **Allow Geolocation Tracking** is enabled in HR Settings, check-ins require valid latitude and longitude values. The system calculates the distance between the employee's reported location and the Shift Location's coordinates. If the distance exceeds the **Checkin Radius** (in metres), the check-in is rejected with a `CheckinRadiusExceededError`.
+
+### Auto-attendance processing
+
+The Shift Type's auto-attendance processor runs on a scheduled basis and converts unprocessed checkin logs into Attendance records. The processor:
+
+1. Fetches all Employee Checkin logs where `skip_auto_attendance = 0`, `attendance` is not set, and `shift_actual_end < last_sync_of_checkin`.
+2. Groups logs by employee and shift start time.
+3. Calculates total working hours using the shift's `working_hours_calculation_based_on` setting.
+4. Determines status:
+   - **Present** if working hours meet or exceed the threshold.
+   - **Half Day** if hours are above the half-day threshold but below the full threshold.
+   - **Absent** if hours are below the half-day threshold.
+5. Flags `late_entry` if check-in exceeds the grace period, and `early_exit` if check-out is before the end grace period.
+6. For employees with no logs, marks them **Absent** for all dates between `process_attendance_after` and `last_sync_of_checkin`.
+
+You can trigger processing manually from a Shift Type record using the **Process Auto Attendance** button.

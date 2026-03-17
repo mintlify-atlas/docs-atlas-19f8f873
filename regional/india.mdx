@@ -1,0 +1,178 @@
+---
+title: "India payroll compliance"
+description: "Configure HRA exemption, Provident Fund, Professional Tax, and income tax computation for Indian payroll in Frappe HR."
+---
+
+Frappe HR provides built-in compliance support for Indian payroll regulations. The regional setup installs custom fields, salary component types, and report roles, and registers overrides for HRA and income tax calculation functions.
+
+## Setup
+
+Running the Frappe HR setup wizard on a site with **India** as the company country installs the following automatically:
+
+- Custom fields on **Salary Component**, **Employee**, **Company**, **Employee Tax Exemption Declaration**, **Employee Tax Exemption Proof Submission**, and **Income Tax Slab**
+- Custom roles for the **Professional Tax Deductions**, **Provident Fund Deductions**, and **Income Tax Deductions** reports
+- The **Indian Standard Gratuity Rule**
+
+To run setup manually:
+
+```bash
+bench --site your-site.com execute hrms.regional.india.setup.setup
+```
+
+## HRA (House Rent Allowance) exemption
+
+HRA exemption reduces an employee's taxable income by the amount of rent paid, subject to limits prescribed under Section 10(13A) of the Income Tax Act.
+
+### Company configuration
+
+Before HRA exemption can be calculated, set the following fields on your **Company** document:
+
+| Field | Description |
+|---|---|
+| Basic Component | The salary component that represents Basic salary |
+| HRA Component | The salary component that represents House Rent Allowance |
+| Arrear Component | The salary component used for salary arrears |
+
+### How exemption is calculated
+
+The exemption is the **minimum** of the following three amounts:
+
+1. The actual HRA received from the employer (annual)
+2. Actual rent paid minus 10% of annual Basic salary
+3. 50% of annual Basic salary (for metro cities) or 40% (for non-metro cities)
+
+This logic is implemented in `hrms/regional/india/utils.py`:
+
+```python
+def calculate_hra_exemption(
+    salary_structure, annual_basic, annual_hra, monthly_house_rent, rented_in_metro_city
+):
+    exemptions = []
+    # Case 1: Actual HRA received
+    exemptions.append(annual_hra)
+    # Case 2: Actual rent paid less 10% of basic
+    actual_annual_rent = monthly_house_rent * 12
+    exemptions.append(flt(actual_annual_rent) - flt(annual_basic * 0.1))
+    # Case 3: 50% of basic (metro) or 40% (non-metro)
+    exemptions.append(annual_basic * 0.5 if rented_in_metro_city else annual_basic * 0.4)
+    return min(exemptions)
+```
+
+### Employee Tax Exemption Declaration
+
+Employees declare their HRA details in the **Employee Tax Exemption Declaration** doctype. The India-specific custom fields added to this doctype are:
+
+| Field | Description |
+|---|---|
+| Monthly House Rent | Amount paid as rent per month |
+| Rented in Metro City | Check if the rented accommodation is in a metro city |
+| HRA as per Salary Structure | Auto-calculated: annual HRA from the salary structure (read-only) |
+| Annual HRA Exemption | Auto-calculated: annual exemption amount (read-only) |
+| Monthly HRA Exemption | Auto-calculated: monthly exemption amount (read-only) |
+
+### Proof submission
+
+During the proof submission window (typically January–March), employees submit actual rent receipts via the **Employee Tax Exemption Proof Submission** doctype. The India-specific fields on this doctype are:
+
+| Field | Description |
+|---|---|
+| House Rent Payment Amount | Total rent paid during the period |
+| Rented in Metro City | Check for metro city accommodation |
+| Rented From Date | Start date of the rental period |
+| Rented To Date | End date of the rental period |
+| Monthly House Rent | Auto-calculated from amount and duration (read-only) |
+| Monthly Eligible Amount | Monthly HRA exemption for the period (read-only) |
+| Total Eligible HRA Exemption | Total exemption for the submitted period (read-only) |
+
+The system validates that the rental dates are at least 15 days apart and do not overlap with any previously submitted proof for the same payroll period.
+
+The `calculate_hra_exemption_for_period` function computes the monthly rent from the total payment and date range (rounding to the nearest 0.5 months), then calls `calculate_annual_eligible_hra_exemption` to derive the exemption amounts.
+
+## Provident Fund (PF)
+
+Provident Fund contributions are configured as salary components with the **Component Type** field set to the appropriate PF type. This custom field is added to the **Salary Component** doctype with the following options:
+
+| Component Type | Usage |
+|---|---|
+| Provident Fund | Standard 12% employee PF deduction |
+| Additional Provident Fund | Voluntary additional PF contribution |
+| Provident Fund Loan | PF loan repayment deduction |
+
+The employer's matching 12% contribution is configured as a separate salary component linked to the same type. Both contributions are included in the **Provident Fund Deductions** report.
+
+<Info>
+Frappe HR does not automatically set PF rates. You must configure the contribution percentage (12% for both employee and employer under EPF) in the salary structure formula or as a fixed amount on the salary component.
+</Info>
+
+### Employee fields for PF
+
+The India regional setup adds a **Provident Fund Account** field to the **Employee** doctype to store the employee's UAN (Universal Account Number).
+
+## Professional Tax
+
+Professional Tax is a state-level tax on employment income in India. It varies by state and is applied as a slab-based deduction.
+
+To configure Professional Tax:
+
+1. Create a salary component with **Component Type** set to **Professional Tax**.
+2. Define the state-wise slabs in the salary component formula or using a custom logic script.
+3. Assign the component to the salary structure.
+
+The **Professional Tax Deductions** report (accessible to HR User, HR Manager, and Employee roles) provides a consolidated view of Professional Tax deducted.
+
+## Income tax computation
+
+### Tax slabs and relief
+
+Income tax is computed using the **Income Tax Slab** doctype, which defines taxable income brackets and rates. The India regional setup adds a **Marginal Relief Threshold Limit** field to this doctype.
+
+Marginal relief applies when an employee's taxable income falls between the basic tax relief limit and the marginal relief threshold. In this range, if the computed tax exceeds the income over the relief limit, the tax payable is capped at the excess income amount.
+
+The `calculate_tax_with_marginal_relief` function in `hrms/regional/india/utils.py` implements this logic:
+
+```python
+def calculate_tax_with_marginal_relief(tax_slab, tax_amount, annual_taxable_earning):
+    if tax_slab.get("marginal_relief_limit"):
+        tax_relief_limit = tax_slab.tax_relief_limit or 0
+        marginal_relief_limit = tax_slab.marginal_relief_limit or 0
+
+        if annual_taxable_earning > tax_relief_limit and annual_taxable_earning < marginal_relief_limit:
+            income_excess_over_tax_relief = annual_taxable_earning - tax_slab.tax_relief_limit
+            if income_excess_over_tax_relief < tax_amount:
+                tax_amount = income_excess_over_tax_relief  # marginal relief applies
+
+    return tax_amount
+```
+
+### Employee Tax Exemption Declaration (80C, 80D, etc.)
+
+Employees declare investments and expenses eligible for deduction under Chapter VI-A (80C, 80D, 80G, etc.) through the **Employee Tax Exemption Declaration** doctype. The declared amounts reduce the taxable income used for TDS computation throughout the year.
+
+### Proof submission (January–March)
+
+At the end of the financial year, employees submit actual proof of their declared investments via **Employee Tax Exemption Proof Submission**. The proof submission updates the remaining TDS deductions for the last few months of the payroll period to account for the actual amounts rather than the declared estimates.
+
+### Form 16 and salary slip breakup
+
+Frappe HR generates salary slips that include a tax breakup section showing the income tax computed for each payroll period. The **Income Tax Deductions** report provides a full-year summary suitable for Form 16 preparation.
+
+## Employee custom fields (India)
+
+The regional setup adds the following fields to the **Employee** doctype:
+
+| Field | Description |
+|---|---|
+| IFSC Code | Bank IFSC code for salary payment via bank transfer |
+| MICR Code | Bank MICR code |
+| PAN Number | Permanent Account Number for income tax purposes |
+| Provident Fund Account | Employee's UAN for PF |
+
+## Gratuity
+
+The **Indian Standard Gratuity Rule** is created during setup:
+
+- **Minimum years for gratuity**: 5 years
+- **Calculation method**: Round off work experience to the nearest year
+- **Rate**: 15/26 of the applicable earnings per completed year of service
+
+This follows the Payment of Gratuity Act, 1972.

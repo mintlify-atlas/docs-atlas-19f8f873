@@ -1,0 +1,143 @@
+---
+title: "Payroll taxation"
+description: "Configure income tax slabs, manage employee investment declarations, and understand how Frappe HR projects and calculates income tax across the payroll year."
+---
+
+Frappe HR calculates income tax automatically each month based on the employee's projected annual income, declared investments, and the applicable Income Tax Slab. Tax is spread evenly across the remaining months of the payroll period.
+
+## Income tax slab
+
+An **Income Tax Slab** defines the tax rate applicable to each band of taxable income. Go to **Payroll → Income Tax Slab → New**.
+
+### Slab fields
+
+| Field | Description |
+|---|---|
+| **Effective From** | The date from which this slab applies. |
+| **Company** | Optional — leave blank to apply to all companies. |
+| **Currency** | The currency for slab limits and amounts. |
+| **Standard Tax Exemption Amount** | A flat exemption deducted from taxable income before applying the slab rates (e.g., India's standard deduction). |
+| **Allow Tax Exemption** | When enabled, Employee Tax Exemption Declarations are considered when computing taxable income. |
+| **Taxable Income Relief Threshold Limit** | Maximum annual taxable income eligible for full tax relief. No tax is applied if income is at or below this limit. |
+| **Taxable Salary Slabs** | A table of income bands, each with a **From Amount**, **To Amount**, and **Percent Deduction**. |
+| **Other Taxes and Charges** | Surcharges or cesses applied on top of the base income tax (e.g., Health & Education Cess in India). |
+
+### Example slab configuration
+
+| From Amount | To Amount | Percent Deduction |
+|---|---|---|
+| 0 | 250,000 | 0% |
+| 250,001 | 500,000 | 5% |
+| 500,001 | 1,000,000 | 20% |
+| 1,000,001 | 0 (no limit) | 30% |
+
+<Note>
+Set **To Amount** to `0` on the last row to indicate no upper limit.
+</Note>
+
+Income Tax Slabs are submittable documents. Submit the slab to make it active, then link it to employees via their Salary Structure Assignment.
+
+## How tax is calculated
+
+The tax for each salary slip is computed as follows:
+
+1. **Compute projected annual income** — multiply the current month's gross earnings by the number of remaining pay cycles in the payroll period, then add earnings already paid in previous slips.
+2. **Subtract exemptions** — standard deduction, approved investment declarations, and any salary components marked **Exempted from Income Tax**.
+3. **Apply tax slabs** — compute the annual tax using the configured slab rates.
+4. **Apply marginal relief** — if the taxable income is just above a slab threshold, marginal relief prevents the tax from exceeding the income difference.
+5. **Distribute across remaining months** — divide the remaining annual tax liability by the number of remaining payroll cycles.
+
+```python
+# Simplified projection logic
+annual_taxable_income = (
+    year_to_date_taxable + (monthly_taxable * remaining_months)
+    - standard_deduction
+    - approved_declarations
+)
+
+annual_tax = apply_slabs(annual_taxable_income, slab_rates)
+monthly_tax = (annual_tax - tax_paid_to_date) / remaining_months
+```
+
+## Employee tax exemption declaration
+
+Employees submit an **Employee Tax Exemption Declaration** at the start of the financial year to declare their planned investments (80C, 80D, HRA, etc.). These declared amounts reduce the projected taxable income used in monthly tax calculations.
+
+Go to **Payroll → Employee Tax Exemption Declaration → New**.
+
+| Field | Description |
+|---|---|
+| **Employee** | The declaring employee. |
+| **Payroll Period** | The payroll year for which the declaration applies. |
+| **Company** | The employee's company. |
+| **Declarations** | A table of exemption categories (e.g., Life Insurance Premium, Mediclaim) and the declared amounts. |
+
+<Info>
+The Income Tax Slab must have **Allow Tax Exemption** enabled for declarations to be considered in tax calculations.
+</Info>
+
+## Employee tax exemption proof submission
+
+At the end of the financial year, employees submit actual proof of their investments. Go to **Payroll → Employee Tax Exemption Proof Submission → New**.
+
+Proof submission documents have the same structure as declarations but record the actual amounts supported by receipts. When a payroll entry has **Deduct Tax for Unsubmitted Tax Exemption Proof** enabled, employees who have not submitted proof are taxed at the higher rate (ignoring their declaration).
+
+## Employee other income
+
+**Employee Other Income** records income sources outside of salary — such as house rental income, interest income, or capital gains — that must be added to the employee's taxable income for the year.
+
+Go to **Payroll → Employee Other Income → New**.
+
+| Field | Description |
+|---|---|
+| **Employee** | The employee with additional income. |
+| **Payroll Period** | The payroll year the income relates to. |
+| **Other Incomes** | A table of income sources and amounts. |
+
+The total from this document is added to the projected annual taxable income during tax calculation.
+
+## Employee benefit application
+
+For flexible benefit components, employees submit an **Employee Benefit Application** to specify how they want to allocate their benefit budget.
+
+Go to **Payroll → Employee Benefit Application → New**.
+
+- The application lists flexible benefit components up to the **Max Benefits** amount on the salary structure.
+- Each component can be allocated up to its individual **Max Benefit Amount (Yearly)** limit.
+- Submitted applications determine how much of each benefit component is accrued or paid out in the payroll cycle.
+
+## India-specific considerations
+
+### HRA exemption
+
+House Rent Allowance (HRA) exemption is calculated as the minimum of:
+
+1. Actual HRA received
+2. 50% of salary (metro cities) or 40% of salary (non-metro cities)
+3. Actual rent paid minus 10% of salary
+
+The exempt portion is deducted from taxable income. Configure this through the **Employee Tax Exemption Declaration** under the relevant HRA exemption sub-category.
+
+### Marginal relief
+
+When an employee's taxable income exceeds a slab threshold by a small amount, marginal relief ensures that the incremental tax does not exceed the incremental income. Frappe HR applies marginal relief automatically when computing tax using the **Taxable Income Relief Threshold Limit** on the Income Tax Slab.
+
+### Professional tax
+
+Professional tax is a state-level deduction in India. Configure it as a **Salary Component** of type `Deduction` with a fixed amount per month or a formula based on the applicable state slab. It is typically **Exempted from Income Tax** (deducted from taxable income before computing central income tax).
+
+### Provident fund
+
+Employee PF (12% of Basic) and Employer PF contributions are modeled as Salary Components. The employer contribution is typically a statistical or separate component that does not reduce net pay but is included in the CTC (Cost to Company) calculation.
+
+```python
+# Employee PF deduction
+Type: Deduction
+Formula: BS * 0.12
+Exempted from Income Tax: Yes
+
+# Employer PF contribution (CTC component, does not reduce net pay)
+Type: Earning
+Do Not Include in Total: Yes
+Formula: BS * 0.12
+```

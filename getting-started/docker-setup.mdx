@@ -1,0 +1,159 @@
+---
+title: "Docker setup"
+description: "Run Frappe HR locally in Docker using Docker Compose — no manual dependency installation required."
+---
+
+The Docker setup is the quickest way to get a working Frappe HR development environment. Docker Compose orchestrates MariaDB, Redis, and the Frappe bench in separate containers and runs the site setup automatically.
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) installed and running
+- [Docker Compose](https://docs.docker.com/compose/install/) (included with Docker Desktop)
+- [Git](https://git-scm.com/)
+
+## Services
+
+The Docker Compose configuration starts three services:
+
+| Service | Image | Purpose |
+|---------|-------|---------|
+| `mariadb` | `mariadb:10.8` | Database server |
+| `redis` | `redis:alpine` | Cache and queue backend |
+| `frappe` | `frappe/bench:latest` | Frappe bench with ERPNext and Frappe HR |
+
+The `frappe` container runs `init.sh`, which initialises a new bench, fetches ERPNext and Frappe HR, creates the site, and starts the development server.
+
+## Steps
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the Frappe HR repository to your local machine:
+
+    ```bash
+    git clone https://github.com/frappe/hrms
+    ```
+  </Step>
+
+  <Step title="Navigate to the docker directory">
+    The Docker Compose file lives in the `docker/` subdirectory:
+
+    ```bash
+    cd hrms/docker
+    ```
+  </Step>
+
+  <Step title="Start the containers">
+    Bring up all services. The first run downloads the Docker images and runs the full bench initialisation, which takes several minutes:
+
+    ```bash
+    docker-compose up
+    ```
+
+    To run the containers in the background, use the `-d` flag:
+
+    ```bash
+    docker-compose up -d
+    ```
+  </Step>
+
+  <Step title="Wait for site setup to complete">
+    The `frappe` container runs `init.sh` on startup. Watch the logs for the line:
+
+    ```
+    Frappe Development Server started...
+    ```
+
+    This confirms the site is ready. If you started in detached mode, follow the logs with:
+
+    ```bash
+    docker-compose logs -f frappe
+    ```
+  </Step>
+
+  <Step title="Open Frappe HR in your browser">
+    Navigate to `http://localhost:8000` and log in with the default credentials:
+
+    | Field | Value |
+    |-------|-------|
+    | URL | `http://localhost:8000` |
+    | Username | `Administrator` |
+    | Password | `admin` |
+  </Step>
+</Steps>
+
+<Warning>
+  The default password `admin` is only suitable for local development. Change it before exposing the instance to any network.
+</Warning>
+
+## What the init script does
+
+The `init.sh` script that runs inside the container performs the following steps automatically:
+
+```bash
+# Initialise a new bench
+bench init --skip-redis-config-generation frappe-bench
+
+# Point bench at the Docker service hostnames
+bench set-mariadb-host mariadb
+bench set-redis-cache-host redis://redis:6379
+
+# Fetch apps
+bench get-app erpnext
+bench get-app hrms
+
+# Create the site
+bench new-site hrms.localhost \
+  --mariadb-root-password 123 \
+  --admin-password admin
+
+# Install Frappe HR
+bench --site hrms.localhost install-app hrms
+
+# Start the development server
+bench start
+```
+
+## Common commands
+
+<CodeGroup>
+
+```bash Stop containers
+docker-compose down
+```
+
+```bash Stop and remove volumes
+docker-compose down -v
+```
+
+```bash Open a shell inside the bench container
+docker-compose exec frappe bash
+```
+
+```bash Run bench commands inside the container
+docker-compose exec frappe bench --site hrms.localhost console
+```
+
+</CodeGroup>
+
+## Subsequent starts
+
+After the initial setup, the `init.sh` script detects that the bench already exists and skips initialisation, starting the bench server directly:
+
+```bash
+docker-compose up
+```
+
+<Note>
+  Data is persisted in the `mariadb-data` Docker volume. Removing this volume with `docker-compose down -v` destroys all site data.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Local bench installation" icon="terminal" href="/getting-started/installation">
+    Install Frappe HR directly on your machine using the Frappe Bench CLI.
+  </Card>
+  <Card title="First steps" icon="play" href="/getting-started/first-steps">
+    Configure your company, add employees, and set up leave policies after installation.
+  </Card>
+</CardGroup>

@@ -1,0 +1,49 @@
+---
+title: "Regional settings overview"
+description: "Frappe HR supports country-specific payroll compliance through regional overrides for India and the UAE."
+---
+
+Frappe HR is designed to handle payroll compliance requirements that vary by country. Regional support is implemented through a `regional_overrides` mechanism in `hooks.py` that replaces generic payroll functions with country-specific implementations at runtime.
+
+## How regional overrides work
+
+When Frappe HR processes payroll, it calls a set of standard utility functions. If the company's country matches a supported region, the framework automatically routes the call to the regional override instead.
+
+The overrides are declared in `hrms/hooks.py`:
+
+```python hooks.py
+regional_overrides = {
+    "India": {
+        "hrms.hr.utils.calculate_annual_eligible_hra_exemption": "hrms.regional.india.utils.calculate_annual_eligible_hra_exemption",
+        "hrms.hr.utils.calculate_hra_exemption_for_period": "hrms.regional.india.utils.calculate_hra_exemption_for_period",
+        "hrms.hr.utils.calculate_tax_with_marginal_relief": "hrms.regional.india.utils.calculate_tax_with_marginal_relief",
+    },
+}
+```
+
+The key is the country name as it appears in the **Company** doctype. The value is a mapping from the base function path to the regional implementation.
+
+<Info>
+Regional overrides are triggered automatically based on the **Country** field of the company against which payroll is processed. No manual configuration is required beyond setting up your company's country.
+</Info>
+
+## Setup
+
+Regional data (custom fields, salary components, gratuity rules, and report roles) is installed when you run the Frappe HR setup wizard or when you install the app against a site with a matching country. The setup logic lives in `hrms/regional/<country>/setup.py`.
+
+To re-run setup for a region:
+
+```bash
+bench --site your-site.com execute hrms.regional.india.setup.setup
+```
+
+## Supported regions
+
+<CardGroup cols={2}>
+  <Card title="India" icon="building" href="/regional/india">
+    HRA exemption, Provident Fund, Professional Tax, income tax computation with marginal relief, Employee Tax Exemption Declarations, proof submission, and Form 16 support.
+  </Card>
+  <Card title="UAE" icon="building" href="/regional/uae">
+    End-of-Service Gratuity rules for limited contracts, unlimited contracts on termination, and unlimited contracts on resignation, pre-configured with the correct slab fractions.
+  </Card>
+</CardGroup>

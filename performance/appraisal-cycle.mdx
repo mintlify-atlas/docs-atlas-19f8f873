@@ -1,0 +1,114 @@
+---
+title: "Appraisal cycles"
+description: "Create and manage review periods, add appraisees, and move a cycle from draft through to completion."
+---
+
+An Appraisal Cycle is the central document that controls a performance review period. It defines the date range, the employees being reviewed, and the settings that govern how scores are calculated. All Appraisal, Goal, and Employee Performance Feedback documents for a review period are linked back to a single cycle.
+
+## Creating a cycle
+
+<Steps>
+  <Step title="Open Appraisal Cycle">
+    Go to **HR > Performance > Appraisal Cycle** and click **New**.
+  </Step>
+  <Step title="Fill in the basic details">
+    Enter a unique **Cycle Name**, select the **Company**, and set the **Start Date** and **End Date** for the review period.
+  </Step>
+  <Step title="Configure scoring settings">
+    Choose the **KRA Evaluation Method** and, optionally, enable a custom final score formula (see [Scoring settings](#scoring-settings) below).
+  </Step>
+  <Step title="Add appraisees">
+    Use the **Get Employees** button to auto-populate the appraisee list from your employee master, or add rows manually. Assign an **Appraisal Template** to each appraisee.
+  </Step>
+  <Step title="Create Appraisals">
+    Click **Create Appraisals** to generate individual Appraisal documents for every appraisee. For lists larger than 30 employees the creation is queued in the background.
+  </Step>
+</Steps>
+
+## Cycle fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| **Cycle Name** | Data | Unique name for the cycle (e.g., "Annual Review 2025"). Used as the document name. |
+| **Company** | Link | Company the cycle applies to. |
+| **Status** | Select | Current state of the cycle. Read-only; managed by the system. |
+| **Start Date** | Date | First day of the review period. |
+| **End Date** | Date | Last day of the review period. |
+| **Department** | Link | Optional filter to narrow the appraisee list to one department. |
+| **Branch** | Link | Optional filter to narrow the appraisee list to one branch. |
+| **Designation** | Link | Optional filter to narrow the appraisee list to one designation. |
+| **KRA Evaluation Method** | Select | How KRA scores are derived. See below. |
+| **Calculate Final Score based on Formula** | Check | Enable to provide a custom Python expression for the final score. |
+| **Final Score Formula** | Code | Python expression evaluated per appraisal when the formula option is enabled. |
+
+## Cycle status
+
+Cycle status progresses in one direction only:
+
+| Status | Meaning |
+| --- | --- |
+| **Not Started** | The cycle has been created but no appraisals have been created yet. |
+| **In Progress** | Appraisals exist and the review is underway. Employees can update goals and self-ratings. |
+| **Completed** | All appraisals are submitted. No further changes to appraisals, goals, or feedback are allowed. |
+
+<Warning>
+You cannot mark a cycle as **Completed** if any Appraisal documents in the cycle are still in Draft status. Submit all appraisals first, then click **Complete Cycle**.
+</Warning>
+
+Once a cycle is marked Completed, creating or modifying any linked document (Appraisal, Goal, Feedback) will throw a validation error. To reopen a cycle you must change its status back to **In Progress** manually.
+
+## Bulk-adding appraisees
+
+The **Get Employees** button pulls all active employees from the Employee master that match the optional filters (Department, Branch, Designation). It clears any existing rows and repopulates the list.
+
+Each appraisee row is populated with:
+- Employee and employee name
+- Branch, designation, and department (fetched from the Employee record)
+- Appraisal Template — automatically matched from the **Designation** master if a template has been configured there
+
+<Note>
+If an Appraisal Template is not found for a designation, a warning is shown. You can set the template directly in the appraisee table or configure it on the Designation document before running **Get Employees** again.
+</Note>
+
+## Scoring settings
+
+### KRA evaluation method
+
+Choose how KRA scores are derived on each Appraisal document:
+
+| Method | Behaviour |
+| --- | --- |
+| **Automated Based on Goal Progress** | Goal progress values (set by the employee on individual Goal documents) are averaged per KRA. The resulting percentage is converted to a score out of 5. |
+| **Manual Rating** | The reviewer enters a direct score for each KRA on the Appraisal document. The `rate_goals_manually` flag is set on all appraisals in the cycle. |
+
+<Warning>
+The KRA Evaluation Method cannot be changed after any Appraisal documents have been created for the cycle.
+</Warning>
+
+### Custom final score formula
+
+By default the Final Score is the arithmetic mean of:
+- **Goal Score** (`goal_score`) — total weighted KRA score out of 5
+- **Average Feedback Score** (`average_feedback_score`) — mean of submitted feedback total scores
+- **Self Appraisal Score** (`self_appraisal_score`) — weighted self-rating score
+
+Enable **Calculate Final Score based on Formula** to provide a Python expression. The expression has access to all Appraisal fields, all Employee fields, and all Appraisal Cycle fields as variables.
+
+```python
+# Example: weight goal score at 50%, feedback at 30%, self-appraisal at 20%
+(goal_score * 0.5) + (average_feedback_score * 0.3) + (self_appraisal_score * 0.2)
+```
+
+## Appraisal cycle summary
+
+The cycle document shows a live summary that includes:
+- Total number of appraisees
+- Employees with self-appraisal pending (self score is 0)
+- Employees with no goals set
+- Employees with no feedback submitted
+
+This summary helps HR identify gaps before completing the cycle.
+
+## Completing a cycle
+
+Click **Complete Cycle** once all appraisals are submitted. The system checks for any draft appraisals and throws an error if any exist, providing a direct link to the unsubmitted documents.

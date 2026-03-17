@@ -1,0 +1,64 @@
+---
+title: "Recruitment overview"
+description: "Manage the full hiring lifecycle — from staffing plans and job openings through applicant tracking, interviews, and offer letters."
+---
+
+Frappe HR provides an end-to-end recruitment module that covers every stage of the hiring process. Starting with workforce planning and ending with employee onboarding, all stages are linked together so you always have full visibility into your pipeline.
+
+## Recruitment workflow
+
+<Steps>
+  <Step title="Staffing plan / Job requisition">
+    HR or department heads create a **Staffing Plan** to define the number of positions and budget for each designation over a given period. Individual hiring needs are raised as **Job Requisitions** by employees, which can be approved and used to populate a Staffing Plan.
+  </Step>
+  <Step title="Job opening">
+    Once a requisition is approved, an HR user creates a **Job Opening** linked to the requisition and staffing plan. The opening can be published to your company website as a public job listing. Frappe HR registers `Job Opening` as a `website_generator` in `hooks.py`, automatically generating a web page at `jobs/{company}/{job-title}`.
+  </Step>
+  <Step title="Job applicant">
+    Candidates apply through the published website form or HR staff create **Job Applicant** records manually. Applications are linked to the relevant Job Opening and tracked through statuses: Open, Replied, Hold, Accepted, or Rejected.
+  </Step>
+  <Step title="Interview">
+    HR schedules one or more **Interview** rounds for shortlisted applicants. Each Interview Round is pre-configured with a panel of interviewers, expected skill set, and a pass rating threshold. Interviewers submit structured **Interview Feedback** after the session.
+  </Step>
+  <Step title="Job offer">
+    When an applicant clears all interview rounds, HR creates a **Job Offer** linked to that applicant. The offer includes structured offer terms, a letter-head-formatted offer letter, and terms and conditions. Once the applicant accepts, the offer status updates automatically.
+  </Step>
+  <Step title="Employee onboarding">
+    An accepted Job Offer can be converted directly into a new **Employee** record, triggering the Employee Onboarding workflow to assign equipment, accounts, and training tasks.
+  </Step>
+</Steps>
+
+## Module pages
+
+<CardGroup cols={2}>
+  <Card title="Job openings" icon="briefcase" href="/recruitment/job-opening">
+    Create job openings, publish them on your website, and link them to staffing plans and requisitions.
+  </Card>
+  <Card title="Job applicants" icon="user" href="/recruitment/job-applicant">
+    Track applicant details, sources, statuses, and employee referrals.
+  </Card>
+  <Card title="Interviews" icon="comments" href="/recruitment/interview">
+    Schedule interview rounds, collect structured feedback, and set pass thresholds.
+  </Card>
+  <Card title="Job offers" icon="file-signature" href="/recruitment/job-offer">
+    Generate offer letters, manage offer terms, and trigger employee onboarding.
+  </Card>
+</CardGroup>
+
+## Key documents
+
+| Document | Purpose |
+|---|---|
+| Staffing Plan | Defines planned headcount and budget per designation for a period |
+| Job Requisition | Employee-raised request for a new hire, approved by HR |
+| Job Opening | Advertised role; can be published as a website page |
+| Job Opening Template | Reusable template for frequently posted roles |
+| Job Applicant | Individual application linked to a Job Opening |
+| Interview Round | Configuration for a named round including panel and skill set |
+| Interview | Scheduled session for a specific applicant and round |
+| Interview Feedback | Per-interviewer skill rating and result submission |
+| Job Offer | Formal offer document sent to an accepted applicant |
+
+<Info>
+All recruitment documents require the **HR User** role. The **Interviewer** role is required for users who need to submit Interview Feedback.
+</Info>

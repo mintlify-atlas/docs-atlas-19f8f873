@@ -1,0 +1,112 @@
+---
+title: "Performance feedback"
+description: "Collect structured 360° feedback from managers and peers using criterion-based ratings and written comments."
+---
+
+Frappe HR supports 360° performance reviews through the **Employee Performance Feedback** document. Any employee with the appropriate role can submit a feedback document for a colleague, providing structured criterion ratings and a written comment. Multiple feedback submissions are aggregated into a single average score that feeds into the appraisal's Final Score.
+
+## Employee Performance Feedback
+
+Each feedback document is a submitted (immutable) record that captures:
+- Who the feedback is about (**For Employee**)
+- Who is giving the feedback (**Reviewer**)
+- Which appraisal and cycle it belongs to
+- Criterion-level ratings from the appraisal template
+- A free-text feedback comment
+
+Feedback documents use the naming series `HR-PF-{YYYY}-{#####}`.
+
+### Feedback fields
+
+| Field | Description |
+| --- | --- |
+| **For Employee** | The employee being reviewed. Required. |
+| **Reviewer** | The employee submitting the feedback. Required. Must be a different employee from the appraisee. |
+| **Appraisal** | The Appraisal document this feedback is linked to. Required. The appraisal must belong to the employee selected above. |
+| **Appraisal Cycle** | Auto-fetched from the linked Appraisal. |
+| **Added On** | Timestamp of when the feedback was created. Defaults to now. |
+| **Feedback Ratings** | Table of criteria and numeric ratings (1–5). Fetched from the Appraisal Template. Weightages must total 100%. |
+| **Total Score** | Calculated automatically as the weighted sum of all criterion ratings. Read-only. |
+| **Feedback** | Free-text editor for qualitative comments. Required. |
+
+<Warning>
+An employee cannot submit feedback about themselves. Use the **Self Appraisal** tab on the Appraisal document for self-evaluation instead. The system throws a validation error if the reviewer and employee are the same.
+</Warning>
+
+## How feedback scores are calculated
+
+Each criterion rating is on a scale of 1 to 5. The total score for a feedback document is:
+
+```
+Total Score = Σ (rating × 5 × weightage / 100)
+```
+
+When a feedback document is submitted (or cancelled), the average feedback score on the linked Appraisal is recalculated automatically:
+
+```
+Average Feedback Score = mean of Total Score across all submitted feedback documents
+                         for the employee in this cycle
+```
+
+This average becomes one of the three inputs to the Appraisal's Final Score.
+
+## Submitting feedback
+
+<Steps>
+  <Step title="Open Employee Performance Feedback">
+    Go to **HR > Performance > Employee Performance Feedback** and click **New**.
+  </Step>
+  <Step title="Select the employee and appraisal">
+    Choose **For Employee** and then the **Appraisal** linked to the review period. The Appraisal Cycle is filled automatically.
+  </Step>
+  <Step title="Set the reviewer">
+    Select the **Reviewer** (yourself or the person giving the feedback). The reviewer must be an active employee and cannot be the same as the appraisee.
+  </Step>
+  <Step title="Load the rating criteria">
+    Click **Set Feedback Criteria** to pull the criteria and weightages from the linked Appraisal Template. Criteria are loaded into the **Feedback Ratings** table.
+  </Step>
+  <Step title="Rate each criterion">
+    Enter a rating from 1 to 5 for each criterion. The **Total Score** updates automatically as you fill in ratings.
+  </Step>
+  <Step title="Write the feedback comment">
+    Add qualitative observations in the **Feedback** field. This is required before submission.
+  </Step>
+  <Step title="Submit">
+    Click **Submit**. Once submitted the document is locked. Submitting or cancelling the feedback immediately updates the Average Feedback Score on the Appraisal.
+  </Step>
+</Steps>
+
+## Self-evaluation workflow
+
+Self-evaluation is handled on the Appraisal document itself, not as a separate feedback document. On the **Self Appraisal** tab employees will find:
+
+- **Ratings** — A table of criteria and rating fields, pre-populated from the Appraisal Template. Each criterion has a percentage weightage. The **Total Self Score** is calculated as the weighted sum of all ratings.
+- **Reflections** — A rich-text field for written self-reflection.
+
+The self-score is kept separate from the external feedback score and contributes independently to the Final Score calculation.
+
+<Info>
+The self-rating table uses the same criteria and weightages defined in the **Rating Criteria** section of the Appraisal Template. If no rating criteria are set in the template, the self-ratings table will be empty.
+</Info>
+
+## Viewing feedback history
+
+The **Feedback** tab on the Appraisal document shows all submitted feedback in reverse chronological order, including:
+- Reviewer name and designation
+- Submission timestamp
+- Total score per feedback document
+- Rating distribution chart (percentage of reviews at each star level 1–5)
+- The current Average Feedback Score
+
+## Roles and permissions
+
+| Role | Create | Submit | Cancel | Read |
+| --- | --- | --- | --- | --- |
+| Employee | Yes | Yes | Yes | Own records |
+| HR Manager | Yes | Yes | Yes | All records |
+| HR User | — | — | — | All records |
+| System Manager | Yes | Yes | Yes | All records |
+
+<Note>
+HR Users can view all feedback but cannot create or submit it. Feedback creation is intentionally open to all employees so that peers, skip-level managers, and direct reports can all participate in 360° reviews.
+</Note>

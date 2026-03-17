@@ -1,0 +1,148 @@
+---
+title: "Interviews"
+description: "Configure interview rounds, schedule sessions, collect structured feedback, and move applicants through the hiring pipeline."
+---
+
+Frappe HR structures interviews around pre-configured **Interview Rounds**. Each round defines the panel of interviewers, the skills to assess, and the minimum rating required to pass. Individual **Interview** documents are then scheduled against rounds for specific applicants.
+
+## Interview Round configuration
+
+Create an Interview Round in **HR > Recruitment > Interview Round** before scheduling any interviews.
+
+| Field | Description |
+|---|---|
+| **Round Name** | Unique name for the round (e.g., "Technical Round 1", "HR Interview") |
+| **Interview Type** | Links to the Interview Type master for categorisation |
+| **Designation** | If set, the round is only applicable to applicants for this designation |
+| **Interviewers** | List of users who will conduct this round (must have the Interviewer role) |
+| **Expected Average Rating** | Minimum average rating an applicant must achieve to clear this round |
+| **Expected Skill Set** | Table of skills to be assessed; each interviewer rates these skills individually |
+
+<Tip>
+Assign the **Interviewer** role to all users who need to submit Interview Feedback. Users without this role cannot be selected in the Interviewers table.
+</Tip>
+
+## Scheduling an interview
+
+<Steps>
+  <Step title="Open the Job Applicant">
+    Navigate to the Job Applicant record you want to interview.
+  </Step>
+  <Step title="Create an interview">
+    Click **Create Interview**. A dialog appears asking you to select an **Interview Round**.
+
+    If the round has a designated designation set, it must match the applicant's designation. The system raises an error otherwise.
+  </Step>
+  <Step title="Fill in the schedule">
+    The new Interview document is pre-filled with:
+    - Job Applicant
+    - Interview Round
+    - Designation
+    - Resume Link
+    - Job Opening
+    - Interviewers from the round's panel
+
+    Set the **Scheduled On** date, **From Time**, and **To Time**.
+  </Step>
+  <Step title="Save and notify">
+    Save the Interview. All interviewers and the applicant are added as recipients for reminder emails.
+  </Step>
+</Steps>
+
+### Rescheduling
+
+To change the time of a scheduled interview, use the **Reschedule Interview** action on the Interview document. Provide the new date and times. The system sends a rescheduling notification email to all interviewers and the applicant automatically.
+
+<Note>
+Each applicant can appear in a given Interview Round only once. Attempting to create a second submitted Interview for the same applicant and round raises a `DuplicateInterviewRoundError`.
+</Note>
+
+## Interview statuses
+
+| Status | Meaning |
+|---|---|
+| **Pending** | Scheduled but not yet held |
+| **Under Review** | Interview completed; awaiting feedback submission |
+| **Cleared** | All feedback submitted; applicant passed the round |
+| **Rejected** | Applicant did not meet the required rating |
+| **Cancelled** | Interview was discarded |
+
+Only Interviews with a **Cleared** or **Rejected** status can be submitted.
+
+## Interview Feedback submission
+
+After the interview session, each panellist submits their own **Interview Feedback** document.
+
+<Steps>
+  <Step title="Open the Interview">
+    The interviewer opens the Interview document (or uses the link in the reminder email).
+  </Step>
+  <Step title="Submit feedback">
+    Click the **Submit Feedback** action. A form appears with:
+    - **Skill Assessment** — rate each skill from the round's Expected Skill Set
+    - **Feedback** — free-text qualitative comments
+    - **Result** — select `Cleared` or `Rejected`
+  </Step>
+  <Step title="Feedback is validated and saved">
+    The system validates that:
+    - The submitter is in the interview's panel
+    - The interview date has passed (feedback cannot be submitted before the scheduled date)
+    - No duplicate feedback exists from the same interviewer
+
+    The average rating across all skill assessments is calculated and stored.
+  </Step>
+  <Step title="Interview average is updated">
+    On submission, the Interview document's **Average Rating** field is recalculated as the mean of all submitted feedback ratings.
+  </Step>
+</Steps>
+
+<Warning>
+Only the user listed as an interviewer can submit feedback for that interview. Submitting on behalf of another interviewer is not permitted.
+</Warning>
+
+## Interview reminders
+
+Frappe HR sends two types of automated reminder emails, both configured in **HR Settings**.
+
+### Pre-interview reminder
+
+The `send_interview_reminder` function runs on the **all** (every-minute) scheduler. It:
+
+1. Checks if `send_interview_reminder` is enabled in HR Settings
+2. Reads the `remind_before` interval (default: 1 hour)
+3. Finds all Pending, non-reminded interviews scheduled within the next `remind_before` window
+4. Sends an email to all interviewers and the applicant using the configured `interview_reminder_template`
+5. Marks the interview as `reminded = 1` to avoid duplicate sends
+
+To enable: go to **HR Settings > Hiring**, tick **Send Interview Reminder**, and select an **Interview Reminder Template**.
+
+### Daily feedback reminder
+
+The `send_daily_feedback_reminder` function runs on the **daily** scheduler. It:
+
+1. Checks if `send_interview_feedback_reminder` is enabled in HR Settings
+2. Finds all Interviews with status **Under Review** whose scheduled time has already passed
+3. Identifies interviewers who have **not yet submitted** their feedback
+4. Sends a reminder email to those interviewers using the `feedback_reminder_notification_template`
+
+To enable: go to **HR Settings > Hiring**, tick **Send Interview Feedback Reminder**, and select a **Feedback Reminder Notification Template**.
+
+## Moving an applicant to the next stage
+
+When an Interview is submitted with a **Cleared** or **Rejected** status, the system displays a dialog asking whether to update the Job Applicant's status to match.
+
+- Clicking **Mark as Accepted** sets the Job Applicant to `Accepted`
+- Clicking **Mark as Rejected** sets the Job Applicant to `Rejected`
+
+For multi-round hiring processes, you can schedule additional interviews in subsequent rounds without changing the applicant status, keeping the record in `Open` or `Replied` until all rounds are complete.
+
+## Calendar view
+
+Interviews support a **Calendar** view. Each interview is displayed in the colour associated with its status:
+
+| Status | Colour |
+|---|---|
+| Pending | Light orange |
+| Under Review | Light blue |
+| Cleared | Light green |
+| Rejected | Light red |

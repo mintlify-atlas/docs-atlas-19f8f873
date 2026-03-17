@@ -1,0 +1,114 @@
+---
+title: "Leave policies"
+description: "Group leave entitlements into reusable policies, assign them to employees, and track balances through the leave ledger."
+---
+
+Frappe HR uses three linked documents to move from a company-wide entitlement policy down to an individual employee balance:
+
+1. **Leave Policy** — defines what types of leave and how many days employees are entitled to.
+2. **Leave Policy Assignment** — links a policy to one or more employees for a specific Leave Period.
+3. **Leave Allocation** — the actual balance record per employee, per leave type, per period. Created automatically from an assignment.
+
+## Leave period
+
+Before creating a policy assignment you need a Leave Period. A Leave Period is a named date range (e.g. `Jan 2025 – Dec 2025`) scoped to a company.
+
+Go to **HR > Leave Period > New** and fill in:
+
+- **Leave Period Name** — descriptive label.
+- **Company** — the company this period applies to.
+- **From Date / To Date** — start and end of the entitlement year.
+- **Is Active** — only active periods appear in assignment and application forms.
+
+<Info>
+You can have multiple active leave periods for different companies in a multi-company setup.
+</Info>
+
+## Leave policy
+
+A Leave Policy is a submittable document that lists leave types with their annual entitlement quantities.
+
+Go to **HR > Leave Policy > New**.
+
+- **Title** — a descriptive name such as `Standard Employee Policy 2025`.
+- **Leave Policy Details** (table) — add one row per leave type:
+  - **Leave Type** — link to a Leave Type record.
+  - **Annual Allocation** — number of days per year.
+
+Submit the policy before assigning it. Submitted policies carry naming format `HR-LPOL-YYYY-#####`.
+
+<Note>
+Leave Policies are submittable and can be amended. Amending a submitted policy creates a new version while preserving the original for audit purposes.
+</Note>
+
+## Leave policy assignment
+
+A Leave Policy Assignment links a submitted Leave Policy to employees for a specific Leave Period.
+
+Go to **HR > Leave Policy Assignment > New**.
+
+<Steps>
+  <Step title="Select the assignment basis">
+    Choose whether to assign to an individual **Employee**, a **Department**, a **Designation**, or the entire **Company**. Bulk assignment modes generate individual assignment records for each matching employee.
+  </Step>
+  <Step title="Choose the leave period">
+    Select the active Leave Period for which entitlements should apply.
+  </Step>
+  <Step title="Select the leave policy">
+    Link the submitted Leave Policy.
+  </Step>
+  <Step title="Set the effective date">
+    The **Effective From** date controls pro-rated allocation for employees who join mid-period.
+  </Step>
+  <Step title="Submit the assignment">
+    On submit, Frappe HR creates Leave Allocation records for each employee and each leave type in the policy. The allocation quantity is automatically pro-rated if the employee's Date of Joining falls after the leave period start date.
+  </Step>
+</Steps>
+
+### Bulk assignment
+
+To assign a policy to multiple employees at once:
+
+1. Open **HR > Leave Policy Assignment**.
+2. Set **Assign Based On** to Department, Designation, or Company.
+3. Fill the target value (e.g. select the department name).
+4. Submit — one assignment record is created per matching employee.
+
+<Tip>
+Use bulk assignment at the start of each year to renew allocations for all employees in one action rather than creating individual assignments.
+</Tip>
+
+## Leave allocation
+
+Leave Allocations are created automatically by the Leave Policy Assignment, but you can also create them manually at **HR > Leave Allocation > New**.
+
+Key fields on a Leave Allocation:
+
+| Field | Description |
+|---|---|
+| **Employee** | The employee whose balance this record represents. |
+| **Leave Type** | The category of leave. |
+| **Leave Period** | The active period this allocation belongs to. |
+| **New Leaves Allocated** | Days freshly granted for this period. |
+| **Carry Forwarded Leaves** | Balance rolled in from the previous period (populated automatically if the leave type allows carry-forward). |
+| **Total Leaves Allocated** | Sum of new and carry-forwarded leaves. |
+| **From Date / To Date** | Validity window — must fall within the leave period. |
+
+Submit the allocation to make the balance available to the employee.
+
+## Leave balance and the leave ledger
+
+Every leave transaction — allocation, application, encashment, or expiry — creates a **Leave Ledger Entry**. The current leave balance is the sum of all ledger entries for an employee and leave type within the active period.
+
+You can inspect entries at **HR > Leave Ledger Entry**. Useful ledger entry types:
+
+| Transaction Type | Effect on Balance |
+|---|---|
+| Leave Allocation | Adds days |
+| Leave Application | Deducts days |
+| Leave Encashment | Deducts days |
+| Carry Forward Expiry | Deducts carry-forwarded days after the expiry window |
+
+<Note>
+Do not delete Leave Ledger Entries directly. Cancel the source document (allocation, application, or encashment) to reverse the ledger impact.
+</Note>

@@ -1,0 +1,92 @@
+---
+title: "Payroll settings"
+description: "Configure how Frappe HR calculates working days, processes payroll accounting, and delivers salary slips."
+---
+
+Payroll Settings is a single-instance document that controls how salary slips are calculated, how payroll accounting entries are posted, and how salary slips are delivered to employees.
+
+**How to access:** Payroll module → Settings → Payroll Settings
+
+<Warning>
+Only users with the **System Manager** role can modify Payroll Settings.
+</Warning>
+
+## Working days and hours
+
+These settings determine how many working days are counted in a pay period, which directly affects the salary per day calculation.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| **Calculate Payroll Working Days Based On** | Select | Leave | Controls the basis for working day calculation. `Leave` deducts approved leave days. `Attendance` uses actual marked attendance records. |
+| **Consider Unmarked Attendance As** | Select | — | Visible when payroll is based on `Attendance`. Treats unmarked days as either `Present` or `Absent`. |
+| **Include Holidays in Total no. of Working Days** | Check | Disabled | When enabled, holidays are counted in the total working days denominator, which lowers the salary-per-day rate. |
+| **Consider Marked Attendance on Holidays** | Check | Disabled | Visible when holidays are included. When enabled, attendance marked on holidays can reduce pay days (holidays are no longer automatically paid). |
+| **Max working hours against Timesheet** | Float | — | Sets an upper limit on the number of hours that can be claimed in a single timesheet, used for hourly payroll calculations. |
+| **Fraction of Daily Salary for Half Day** | Float | 0.5 | The fraction of a full day's wage paid for a half-day attendance record. The default of `0.5` means 50% of daily wages. |
+
+## Salary slip
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| **Disable Rounded Total** | Check | Disabled | Hides and disables the Rounded Total field on salary slips, keeping the exact calculated total. |
+| **Show Leave Balances in Salary Slip** | Check | Disabled | Displays the employee's remaining leave balances on the printed salary slip. |
+
+## Email
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| **Email Salary Slip to Employee** | Check | Enabled | Automatically emails the salary slip to the employee's preferred email address after the payroll entry is submitted. |
+| **Sender** | Link | — | Email Account used as the sender for salary slip emails. Visible when email delivery is enabled. |
+| **Sender Copy** | Link | — | An additional email account that receives a copy of every salary slip email sent. |
+| **Sender Email** | Data | — | Auto-fetched from the selected Sender account. Read-only. |
+| **Email Template** | Link | — | Custom Email Template for the salary slip delivery email body. |
+| **Encrypt Salary Slips in Emails** | Check | Disabled | Attaches the salary slip as a password-protected PDF. |
+| **Password Policy** | Data | — | Template for generating the PDF password. Uses employee fields. Example: `SAL-{first_name}-{date_of_birth.year}` produces `SAL-Jane-1972`. Visible when encryption is enabled. |
+
+## Other settings
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| **Process Payroll Accounting Entry based on Employee** | Check | Disabled | When enabled, the payroll payable account is booked per individual employee rather than as a single consolidated entry. |
+| **Mandatory Benefit Application** | Check | Disabled | When enabled, flexible benefit components are only included in a salary slip if a Benefit Application document exists for the employee and period. |
+| **Create Overtime Slip For Eligible Employee(s)** | Check | Disabled | Includes overtime slip creation as part of the payroll processing workflow for employees who are eligible. |
+
+## Choosing a payroll calculation basis
+
+<Tabs>
+  <Tab title="Leave-based (default)">
+    Frappe HR counts the total working days in the period, then deducts approved leave days that are not paid. This method requires accurate Leave Application records but does not require daily attendance marking.
+
+    **Best for:** Organizations that track leaves but do not use biometric check-in or daily attendance sheets.
+  </Tab>
+  <Tab title="Attendance-based">
+    Frappe HR reads Attendance records for each employee and counts days marked as **Present**, **Work From Home**, or **Half Day**. You must configure **Consider Unmarked Attendance As** to handle days with no record.
+
+    **Best for:** Organizations with biometric devices or the Frappe HR mobile app for daily check-in/out.
+  </Tab>
+</Tabs>
+
+## Configuring encrypted salary slip emails
+
+<Steps>
+  <Step title="Enable email delivery">
+    Check **Email Salary Slip to Employee** and select a **Sender** email account.
+  </Step>
+  <Step title="Enable encryption">
+    Check **Encrypt Salary Slips in Emails**.
+  </Step>
+  <Step title="Set a password policy">
+    Enter a password policy using employee field placeholders. For example:
+    ```
+    SAL-{first_name}-{date_of_birth.year}
+    ```
+    This generates a unique password per employee such as `SAL-Jane-1972`.
+  </Step>
+  <Step title="Communicate the pattern to employees">
+    Inform employees how to construct their password so they can open the PDF attachment.
+  </Step>
+</Steps>
+
+<Note>
+The password is generated at the time the email is sent. Employees cannot retrieve it from the system later, so the policy must be documented and shared in advance.
+</Note>

@@ -1,0 +1,81 @@
+---
+title: "Leaves on mobile"
+description: "Apply for leave, view balances, and manage approvals from the Frappe HR mobile app."
+---
+
+The Leaves section of the mobile app lets employees apply for leave, check their remaining balances, and review their leave history. Managers can also approve or reject requests directly from the app.
+
+## Navigating to leaves
+
+From the bottom navigation bar, tap the **Leaves** tab. The leaves dashboard shows:
+
+- Leave balances grouped by leave type
+- A **Request a Leave** button
+- Recent leave applications
+- Upcoming holidays
+
+## Applying for leave
+
+<Steps>
+  <Step title="Open the leave form">
+    Tap **Request a Leave** on the leaves dashboard, or use the quick link on the home screen.
+  </Step>
+  <Step title="Select a leave type">
+    Choose from the leave types available to you. The app fetches only the leave types you are eligible for based on your leave allocation.
+  </Step>
+  <Step title="Set the date range">
+    Enter the **From Date** and **To Date**. The app validates that the end date is not before the start date and automatically calculates the number of leave days, accounting for holidays and weekends.
+  </Step>
+  <Step title="Apply for a half day (optional)">
+    Toggle **Half Day** to request half a day. A **Half Day Date** field appears where you can select which day within your range to mark as half-day.
+  </Step>
+  <Step title="Set a leave approver">
+    Select a leave approver from your department. The app pre-fills the approver if one is configured for your department.
+  </Step>
+  <Step title="Add a reason and attachments">
+    Enter a reason for the leave. Tap the attachment icon to add supporting documents if required.
+  </Step>
+  <Step title="Submit">
+    Tap **Submit** to send the leave application. The status changes to **Open** until your approver acts on it.
+  </Step>
+</Steps>
+
+<Note>
+The app excludes administrative fields such as naming series and salary slip from the mobile form to reduce clutter. All required fields are preserved.
+</Note>
+
+## Viewing leave balance
+
+Leave balances are shown at the top of the leaves dashboard, broken down by leave type. The balance displayed is as of the current date and reflects already-approved leaves.
+
+## Leave history
+
+Tap **View All** on the recent leaves list to open the full leave application list. You can filter applications by status and date range.
+
+| Field | Description |
+|---|---|
+| Leave Type | The category of leave applied for |
+| From Date / To Date | The date range of the leave |
+| Total Leave Days | Number of working days consumed |
+| Leave Balance | Remaining balance for the selected leave type |
+| Status | Draft, Open, Approved, or Rejected |
+
+## Approving and rejecting requests (managers)
+
+If you are a leave approver, leave applications submitted by your team members appear in your list view with a status of **Open**.
+
+<Steps>
+  <Step title="Open the leave application">
+    Navigate to **Leaves** and tap **View All**. Filter by **Status: Open** to see pending requests.
+  </Step>
+  <Step title="Review the application">
+    Tap a leave application to view the full details, including the leave type, dates, reason, and attachments.
+  </Step>
+  <Step title="Approve or reject">
+    The form is read-only for approvers. Update the **Status** field to **Approved** or **Rejected** and save the record.
+  </Step>
+</Steps>
+
+<Warning>
+Approving a leave application deducts the days from the employee's leave balance. This action cannot be reversed without cancelling the application.
+</Warning>

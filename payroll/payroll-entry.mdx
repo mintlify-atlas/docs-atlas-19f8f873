@@ -1,0 +1,119 @@
+---
+title: "Payroll entry"
+description: "Run payroll for a date range, generate salary slips in bulk, and post accounting entries to ERPNext."
+---
+
+A **Payroll Entry** is the central document that orchestrates bulk payroll processing. It selects eligible employees, creates their salary slips, and posts the payroll journal entry to the General Ledger.
+
+## Creating a payroll entry
+
+<Steps>
+  <Step title="Open a new payroll entry">
+    Go to **Payroll → Payroll Entry → New**.
+  </Step>
+  <Step title="Fill in the payroll parameters">
+    Set the fields that determine which employees and salary structures are in scope:
+
+    | Field | Description |
+    |---|---|
+    | **Company** | The company to run payroll for. |
+    | **Payroll Frequency** | Must match the frequency set on the target salary structures (`Monthly`, `Fortnightly`, etc.). |
+    | **Start Date / End Date** | The payroll period. For monthly payroll, this is typically the first and last day of the month. |
+    | **Department** | Optional — restrict to a single department. |
+    | **Designation** | Optional — restrict to a specific designation. |
+    | **Branch** | Optional — restrict to a specific branch. |
+    | **Grade** | Optional — restrict to a specific employee grade. |
+    | **Cost Center** | Default cost center for accounting entries. |
+    | **Payroll Payable Account** | The liability account to credit when salary is owed. Must have account type **Payable**. |
+    | **Validate Attendance** | When enabled, the entry cannot be submitted if any employee in scope has unmarked attendance for the period. |
+  </Step>
+  <Step title="Get employees">
+    Click **Get Employees**. The system fetches all active employees with a valid Salary Structure Assignment matching the selected company, frequency, and any optional filters. Employees are listed in the **Employees** table.
+
+    Review the list and remove any employees who should be excluded from this run.
+  </Step>
+  <Step title="Create salary slips">
+    Click **Create Salary Slips**. The system generates a draft Salary Slip for each employee in the table. Slips are computed using the employee's assigned salary structure, attendance data, leave applications, and any Additional Salary records for the period.
+
+    After slips are created, the **Salary Slips Created** flag is set on the entry.
+  </Step>
+  <Step title="Review salary slips">
+    Click **View Salary Slips** to open the list of generated slips. Review individual slips, make corrections if needed, and submit them.
+  </Step>
+  <Step title="Submit the payroll entry">
+    Submit the Payroll Entry. This triggers the creation of accounting journal entries:
+
+    - Salary expense accounts are **debited** per component.
+    - The payroll payable account is **credited** for the net pay.
+    - Loan repayment accounts are updated.
+
+    The entry status changes to **Submitted**.
+  </Step>
+  <Step title="Make payment">
+    Post the bank payment against the payroll payable account. You can link a bank account on the Payroll Entry and use the **Make Bank Entry** button to create the payment journal entry.
+  </Step>
+</Steps>
+
+<Warning>
+You cannot submit a Payroll Entry if a Salary Slip already exists for the same employee and the same date range. Cancel or amend the existing slip before reprocessing.
+</Warning>
+
+## Payroll entry fields reference
+
+| Field | Description |
+|---|---|
+| **Salary Slip Based on Timesheet** | Process payroll for timesheet-based salary structures. |
+| **Deduct Tax for Unsubmitted Tax Exemption Proof** | Deduct tax at the higher rate for employees who have not submitted proof of their investment declarations. |
+| **Exchange Rate** | Used when the salary structure currency differs from the company currency. |
+| **Number of Employees** | Auto-populated count of employees in the entry. |
+| **Status** | `Draft` → `Submitted` → `Cancelled`. |
+
+## Payroll period
+
+A **Payroll Period** defines the fiscal payroll year (typically April to March in India, or January to December elsewhere). It is used in income tax calculations to determine the remaining months in the year so that the projected annual tax can be spread evenly across future payslips.
+
+To create one, go to **Payroll → Payroll Period → New** and set:
+
+- **Start Date** and **End Date** of the payroll year
+- **Company**
+- **Payment Dates** — a child table of per-month payroll posting dates
+
+<Info>
+Income Tax Slabs reference a **Payroll Period** through their effective date. Make sure new slabs are created before the start of each payroll year.
+</Info>
+
+## Cancelling a payroll entry
+
+Cancelling a submitted Payroll Entry:
+
+1. Cancels all linked Salary Slips.
+2. Reverses the accounting journal entries.
+3. Resets the `salary_slips_created` and `salary_slips_submitted` flags.
+
+If the entry has more than 50 salary slips, cancellation is processed as a background job.
+
+## Payroll correction
+
+Use **Payroll Correction** when an employee was incorrectly docked Leave Without Pay (LWP) days in a previous period and needs arrear compensation.
+
+To create a correction:
+
+<Steps>
+  <Step title="Open Payroll Correction">
+    Go to **Payroll → Payroll Correction → New**.
+  </Step>
+  <Step title="Select employee and payroll period">
+    Choose the employee and the payroll period in which the error occurred.
+  </Step>
+  <Step title="Select the month">
+    Choose the specific month for LWP reversal. The system auto-fetches the linked Salary Slip Reference and displays the original working days, payment days, and LWP days.
+  </Step>
+  <Step title="Enter days to reverse">
+    Enter the number of LWP days to reverse. The value cannot exceed the total LWP days recorded in the original slip.
+  </Step>
+  <Step title="Submit">
+    Submit the record. The system calculates the arrear difference for earnings, deductions, and accrual components and creates Additional Salary records (as arrears) for the specified payroll date. These arrears are automatically picked up by the next salary slip.
+  </Step>
+</Steps>
+
+The correction document is named `PAYCORR-{payroll_period}-{sequence}` and links back to the Additional Salary records it created.

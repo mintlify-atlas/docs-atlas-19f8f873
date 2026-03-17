@@ -1,0 +1,77 @@
+---
+title: "Mobile app overview"
+description: "Access Frappe HR features from any mobile browser using the built-in Progressive Web App."
+---
+
+Frappe HR includes a mobile app built with Vue and Ionic Framework. It is a Progressive Web App (PWA) served directly from your Frappe HR instance — no separate installation or app store is required.
+
+## Accessing the app
+
+Open your Frappe HR instance URL in a mobile browser and navigate to `/hrms`. You will be prompted to log in if you are not already authenticated.
+
+<Note>
+The mobile app is available to any user with an Employee record linked to their account. Users without a linked Employee record will see an error screen.
+</Note>
+
+## Installing as a PWA
+
+Installing the app to your home screen gives you a native-like experience with a dedicated icon and full-screen display.
+
+<Steps>
+  <Step title="Open in your mobile browser">
+    Navigate to `https://your-instance.com/hrms` in Chrome (Android) or Safari (iOS).
+  </Step>
+  <Step title="Open browser menu">
+    On Android, tap the three-dot menu and select **Add to Home screen**. On iOS, tap the Share icon and select **Add to Home Screen**.
+  </Step>
+  <Step title="Confirm installation">
+    Confirm the name and tap **Add**. The Frappe HR icon will appear on your home screen.
+  </Step>
+  <Step title="Launch and log in">
+    Tap the icon to open the app. Log in with your Frappe HR credentials.
+  </Step>
+</Steps>
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Leaves" icon="calendar" href="/mobile-app/leave-management">
+    Apply for leave, view balances by leave type, and approve or reject requests as a manager.
+  </Card>
+  <Card title="Attendance and check-in" icon="clock" href="/mobile-app/attendance-checkin">
+    Check in and out with optional geolocation capture. View attendance history and manage shift assignments.
+  </Card>
+  <Card title="Expense claims" icon="receipt" href="/mobile-app/expense-claims">
+    Submit expense claims, attach receipt photos, and track approval status.
+  </Card>
+  <Card title="Salary slips" icon="file-text">
+    View and download your salary slips directly from the app.
+  </Card>
+  <Card title="Notifications" icon="bell">
+    Receive real-time push notifications for approvals, rejections, and other HR events.
+  </Card>
+  <Card title="Profile" icon="user">
+    View your employee profile, designation, and department information.
+  </Card>
+</CardGroup>
+
+## Home screen
+
+After logging in, the home screen shows:
+
+- A **Check In / Check Out** panel (if your administrator has enabled mobile check-in)
+- Quick links to common actions: Request Attendance, Request a Shift, Request Leave, Claim an Expense, Request an Advance, and View Salary Slips
+- A panel showing pending requests that need your attention
+
+## Administrator settings
+
+Two settings in **HR Settings** control mobile app behaviour:
+
+| Setting | Description |
+|---|---|
+| Allow Employee Checkin from Mobile App | Shows the check-in/check-out panel on the home screen |
+| Allow Geolocation Tracking | Captures latitude and longitude coordinates when an employee checks in or out |
+
+## Technology
+
+The mobile app is built with [Vue 3](https://vuejs.org), [Ionic Framework](https://ionicframework.com), and [Frappe UI](https://frappeui.com). It uses `vite-plugin-pwa` and Workbox for service worker and offline caching support. Firebase is used for push notifications.

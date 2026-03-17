@@ -1,0 +1,98 @@
+---
+title: "Appraisal templates"
+description: "Create reusable templates that define the KRAs with weightages and rating criteria used across appraisal cycles."
+---
+
+An Appraisal Template is a reusable configuration document that specifies what is evaluated during a performance review. It contains two tables: a list of KRAs with percentage weightages, and a list of rating criteria used for self-appraisals and feedback forms.
+
+Templates are typically created per designation and can be reused across multiple appraisal cycles.
+
+## Template fields
+
+| Field | Description |
+| --- | --- |
+| **Appraisal Template Title** | Unique name for the template (used as the document name). |
+| **Description** | Optional summary of what this template is designed for. |
+| **KRAs** (goals table) | Rows of Key Result Areas with their percentage weightages. Weightages must sum to 100%. |
+| **Rating Criteria** | Rows of criteria used for self-ratings and peer feedback, with weightages that must also sum to 100%. |
+
+<Note>
+The field labelled **KRAs** in the user interface maps to the `goals` table in the database (the legacy field name). Each row contains a `key_result_area` (link to a KRA document) and a `per_weightage` value.
+</Note>
+
+## Creating a template
+
+<Steps>
+  <Step title="Open Appraisal Template">
+    Go to **HR > Performance > Appraisal Template** and click **New**.
+  </Step>
+  <Step title="Name the template">
+    Enter a unique **Appraisal Template Title**. Use a descriptive name that identifies the role or team it applies to, for example "Software Engineer" or "Sales Executive".
+  </Step>
+  <Step title="Add KRAs with weightages">
+    In the **KRAs** table, add each Key Result Area that applies to this role. Set the **Weightage (%)** for each row. All weightages must add up to exactly 100.
+  </Step>
+  <Step title="Add rating criteria">
+    In the **Rating Criteria** table, add the criteria used for self-appraisals and peer feedback — for example "Communication", "Problem Solving", "Ownership". Again, weightages must total 100.
+  </Step>
+  <Step title="Save">
+    Save the template. It is now available for selection on Designation records and in the Appraisee table of an Appraisal Cycle.
+  </Step>
+</Steps>
+
+## KRA weightage configuration
+
+Each row in the KRAs table has two fields:
+
+| Field | Description |
+| --- | --- |
+| **Key Result Area** | Link to a KRA master document. |
+| **Weightage (%)** | The relative importance of this KRA in the overall score. |
+
+When an Appraisal document is created from a cycle, the KRAs and their weightages are copied from the template into the appraisal's **Appraisal KRA** table (or the **Goals** table when using manual rating mode).
+
+If the total weightage does not equal 100%, the Appraisal Template will throw a validation error on save.
+
+## Rating criteria
+
+Rating criteria define the dimensions used for both the self-appraisal and peer feedback:
+
+| Field | Description |
+| --- | --- |
+| **Criteria** | A short label for the criterion (e.g., "Communication", "Technical Depth"). |
+| **Weightage (%)** | The relative importance of this criterion in the total self/feedback score. |
+
+Criteria rows are copied into the **Self Ratings** table on the Appraisal document and into the **Feedback Ratings** table on Employee Performance Feedback documents. Employees and reviewers rate each criterion on a 1–5 scale.
+
+## Linking templates to designations
+
+You can set a default template on each Designation record. When you click **Get Employees** on an Appraisal Cycle, Frappe HR reads the `appraisal_template` field from each employee's Designation and pre-fills it in the appraisee list.
+
+This means you only need to configure the template once per designation rather than selecting it manually for each employee in every cycle.
+
+<Tip>
+Configure an Appraisal Template for every active Designation before creating your first cycle. This ensures **Get Employees** can fully populate the appraisee list without manual template assignment.
+</Tip>
+
+## Reusing templates across cycles
+
+Templates are not cycle-specific — the same template can be selected for every annual or quarterly cycle for a given designation. When a new cycle begins:
+
+1. Create or reuse the template.
+2. Create the new Appraisal Cycle and select appraisees.
+3. Confirm each appraisee has the correct template assigned.
+4. Click **Create Appraisals**.
+
+The template's KRAs and rating criteria are copied into each new Appraisal document at creation time. Subsequent changes to the template do not affect existing appraisals.
+
+<Warning>
+Changes to an Appraisal Template do not retroactively update existing Appraisal documents. If you need to change the KRAs or criteria for an active cycle, update the individual Appraisal documents directly.
+</Warning>
+
+## Best practices
+
+- Keep the number of KRAs between 3 and 6 per template. More than 6 makes it difficult for employees to prioritise.
+- Align KRA weightages with business priorities for the role. A sales role might weight "Revenue Target" at 50%, while an engineering role might split evenly across delivery, quality, and collaboration KRAs.
+- Use consistent rating criteria across all templates so that feedback scores are comparable across departments.
+- Review and update templates annually before creating a new cycle, rather than during an active cycle.
+- Name templates by designation (e.g., "Account Executive", "Senior Engineer") so they are easy to identify when configuring a cycle.

@@ -1,0 +1,173 @@
+---
+title: "Notifications"
+description: "Configure email and PWA push notifications for leave approvals, interview reminders, birthday and work anniversary reminders, and daily work summaries."
+---
+
+Frappe HR delivers automated notifications through two channels: **email** (via scheduled tasks and document events) and **PWA push notifications** (in-app notifications in the Frappe HR mobile app).
+
+## Email notifications
+
+### Leave notifications
+
+Leave notifications are triggered when a Leave Application is submitted, approved, or rejected.
+
+**Configuration:** HR Settings → Leaves tab
+
+| Setting | Description |
+|---|---|
+| **Send Leave Notification** | Master toggle. Must be enabled for any leave emails to be sent. |
+| **Leave Approval Notification Template** | Email Template sent to the approver when an employee submits a leave application. |
+| **Leave Status Notification Template** | Email Template sent to the employee when their leave is approved or rejected. |
+
+To create an email template, go to **Settings → Email Template**. You can use Jinja templating to include dynamic data such as `{{ doc.employee_name }}`, `{{ doc.leave_type }}`, and `{{ doc.from_date }}`.
+
+### Birthday reminders
+
+Birthday reminders are sent daily by the scheduler to notify the team of upcoming employee birthdays.
+
+**Configuration:** HR Settings → Employee tab → Reminders section
+
+- Enable **Birthdays** to activate birthday reminder emails.
+- Select a **Sender** email account if you want the emails to come from a specific address rather than the system default.
+
+The underlying scheduled task runs at:
+```python
+# hooks.py — daily scheduler
+"hrms.controllers.employee_reminders.send_birthday_reminders"
+```
+
+### Work anniversary reminders
+
+Work anniversary reminders notify the team when an employee's joining anniversary is approaching.
+
+**Configuration:** HR Settings → Employee tab → Reminders section
+
+- Enable **Work Anniversaries** to activate the reminders.
+
+The scheduled task runs daily:
+```python
+# hooks.py — daily scheduler
+"hrms.controllers.employee_reminders.send_work_anniversary_reminders"
+```
+
+### Holiday reminders
+
+Holiday reminders notify employees of upcoming holidays from the company's Holiday List.
+
+**Configuration:** HR Settings → Employee tab → Reminders section
+
+| Setting | Description |
+|---|---|
+| **Holidays** | Enable or disable holiday reminder emails. |
+| **Set the frequency for holiday reminders** | `Weekly` or `Monthly`. Controls how far in advance reminders are sent. |
+
+The weekly and monthly advance reminders run via:
+```python
+# hooks.py — weekly
+"hrms.controllers.employee_reminders.send_reminders_in_advance_weekly"
+
+# hooks.py — monthly
+"hrms.controllers.employee_reminders.send_reminders_in_advance_monthly"
+```
+
+### Interview reminders
+
+Interview reminders notify interviewers before a scheduled interview session.
+
+**Configuration:** HR Settings → Recruitment tab
+
+| Setting | Description |
+|---|---|
+| **Send Interview Reminder** | Enable automated pre-interview reminders. |
+| **Interview Reminder Notification Template** | Email Template for the reminder. Required when enabled. |
+| **Remind Before** | How far before the interview to send the reminder. Default: `00:15:00` (15 minutes). |
+
+The reminder check runs on every scheduler tick (`all` frequency):
+```python
+# hooks.py — all (every scheduler run)
+"hrms.hr.doctype.interview.interview.send_interview_reminder"
+```
+
+### Interview feedback reminders
+
+After an interview, Frappe HR can remind interviewers to submit their feedback.
+
+**Configuration:** HR Settings → Recruitment tab
+
+| Setting | Description |
+|---|---|
+| **Send Interview Feedback Reminder** | Enable post-interview feedback reminders. |
+| **Feedback Reminder Notification Template** | Email Template for the feedback reminder. |
+
+The daily feedback reminder runs via:
+```python
+# hooks.py — daily
+"hrms.hr.doctype.interview.interview.send_daily_feedback_reminder"
+```
+
+### Daily work summary
+
+The Daily Work Summary feature collects end-of-day updates from employees via email replies.
+
+**Configuration:** HR → Daily Work Summary Group
+
+A Daily Work Summary Group defines which employees receive the summary email, what time it is sent, and which days it runs. The summary emails are triggered hourly and dispatched at the configured time:
+```python
+# hooks.py — hourly
+"hrms.hr.doctype.daily_work_summary_group.daily_work_summary_group.trigger_emails"
+
+# hooks.py — daily
+"hrms.hr.doctype.daily_work_summary_group.daily_work_summary_group.send_summary"
+```
+
+## PWA push notifications
+
+Frappe HR includes a **PWA Notification** doctype that delivers in-app push notifications to employees using the Frappe HR mobile app.
+
+### How PWA notifications work
+
+When an event occurs (such as a leave application being approved), Frappe HR creates a `PWA Notification` record targeting the relevant user. The mobile app polls for unread notifications and displays them as push alerts.
+
+Each PWA Notification record contains:
+
+| Field | Description |
+|---|---|
+| **To User** | The user who receives the notification. |
+| **From User** | The user who triggered the action. |
+| **Message** | The notification body text. |
+| **Read** | Whether the employee has acknowledged the notification. |
+| **Reference Document Type** | The doctype of the linked document (e.g., `Leave Application`). |
+| **Reference Document Name** | The name/ID of the linked document. |
+
+<Note>
+PWA Notification records are readable by users with the **Employee** role. They are intentionally excluded from the standard delete-on-cancel cascade (`ignore_links_on_delete = ["PWA Notification"]` in `hooks.py`) to preserve the notification history even if the source document is cancelled.
+</Note>
+
+## Configuring notification templates
+
+<Steps>
+  <Step title="Create a new Email Template">
+    Go to **Settings → Email Template** and click **New**.
+  </Step>
+  <Step title="Set the subject and body">
+    Use Jinja2 syntax to include dynamic data from the document. For a leave notification:
+    ```jinja
+    Subject: Leave Application - {{ doc.leave_type }} - {{ doc.status }}
+    
+    Dear {{ doc.employee_name }},
+    
+    Your leave application for {{ doc.leave_type }} from
+    {{ doc.from_date }} to {{ doc.to_date }} has been {{ doc.status | lower }}.
+    ```
+  </Step>
+  <Step title="Save the template">
+    Click **Save** and note the template name.
+  </Step>
+  <Step title="Link the template in HR Settings">
+    In **HR Settings**, navigate to the relevant section and select your template in the appropriate notification template field.
+  </Step>
+</Steps>
+
+<Tip>
+Frappe's Email Template supports the full Jinja2 templating engine. You can access any field on the document using `doc.field_name` and format dates with filters like `{{ doc.from_date | frappe.format_date }}`.
+</Tip>

@@ -1,0 +1,116 @@
+---
+title: "Attendance reports"
+description: "Overview of attendance and leave reports in Frappe HR including the Monthly Attendance Sheet, Shift Attendance, and Leave Ledger."
+---
+
+Frappe HR provides several attendance and leave reports that give HR teams and managers visibility into employee presence, shift coverage, holiday work, and leave ledger history.
+
+**How to access:** HR module → Reports
+
+## Monthly Attendance Sheet
+
+The Monthly Attendance Sheet is the primary attendance report. It renders a calendar-style grid with one row per employee and one column per day in the selected month.
+
+**Attendance status codes used in the report:**
+
+| Status | Meaning |
+|---|---|
+| P | Present |
+| A | Absent |
+| HD | Half Day |
+| OD | On Duty |
+| WFH | Work From Home |
+| L | On Leave |
+| H | Holiday |
+| WO | Weekly Off |
+
+**Filters:** Month, Year, Company, Department, Employee, Employee Type
+
+<Tip>
+Export the Monthly Attendance Sheet to Excel for payroll input. The grid layout makes it easy to spot patterns such as frequent Monday/Friday absences.
+</Tip>
+
+## Shift Attendance Report
+
+Shows attendance records filtered and grouped by shift type. Each row corresponds to an employee's attendance on a specific date, with the assigned shift displayed.
+
+Use this report to:
+- Verify that auto-attendance from shift check-ins has processed correctly.
+- Identify employees who were absent or late on particular shifts.
+- Review shift coverage for a specific period.
+
+**Filters:** From Date, To Date, Shift Type, Company, Department, Employee
+
+## Employees Working on a Holiday
+
+Lists attendance records that fall on days marked as holidays in the employee's assigned Holiday List.
+
+Use this report to:
+- Identify employees who need compensatory off or overtime pay for holiday work.
+- Verify that holiday work was authorized.
+
+**Filters:** Date, Company, Holiday List
+
+<Note>
+For this report to return results, employees must have attendance records manually marked or auto-generated via check-in for the holiday date, AND the date must be in their assigned Holiday List.
+</Note>
+
+## Employee Hours Utilization Based on Timesheet
+
+Compares actual hours logged in timesheets against each employee's standard working hours for the period. Shows:
+
+- **Total Hours** — Sum of timesheet hours in the period.
+- **Billed Hours** — Hours logged against billable projects.
+- **Unbilled Hours** — Hours logged as internal or non-billable.
+- **% Utilization** — Billed hours as a percentage of total hours.
+
+**Filters:** From Date, To Date, Company, Employee, Project
+
+<Info>
+This report requires timesheets to be submitted in Frappe Framework. It reflects hours at the timesheet level, not at the daily attendance level.
+</Info>
+
+## Leave Ledger
+
+The Leave Ledger report shows a chronological transaction log for an employee's leave balance. Each row represents a single leave transaction:
+
+| Transaction Type | Description |
+|---|---|
+| Leave Allocation | Leaves granted via Leave Allocation document. |
+| Leave Application | Leaves deducted when a leave application is approved. |
+| Leave Encashment | Leaves converted to cash payment. |
+| Carry Forward | Leaves carried forward to the next period. |
+| Expiry | Leaves that expired at the end of the leave period. |
+
+**Filters:** Employee, Leave Type, From Date, To Date, Transaction Type
+
+Use this report to:
+- Reconcile discrepancies between a visible leave balance and expected allocation.
+- Trace the exact dates and amounts of each leave transaction.
+- Verify that leave expiry has run correctly after a period closes.
+
+## Exporting reports to Excel or CSV
+
+All attendance reports support export to Excel (`.xlsx`) and CSV.
+
+<Steps>
+  <Step title="Open the report">
+    Navigate to the report from the HR module Reports list.
+  </Step>
+  <Step title="Set filters">
+    Select the desired date range, company, department, and any other relevant filters.
+  </Step>
+  <Step title="Refresh">
+    Click **Refresh** to load report data.
+  </Step>
+  <Step title="Export">
+    Click the **Export** button (download icon) in the report toolbar.
+  </Step>
+  <Step title="Select format">
+    Choose **Excel** for a formatted spreadsheet or **CSV** for a plain data file compatible with other tools.
+  </Step>
+</Steps>
+
+<Tip>
+For the Monthly Attendance Sheet, the Excel export preserves the grid layout. For list-style reports like the Leave Ledger, CSV is often more convenient for importing into payroll or BI tools.
+</Tip>

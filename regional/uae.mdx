@@ -1,0 +1,100 @@
+---
+title: "UAE payroll compliance"
+description: "Configure End-of-Service Gratuity rules for UAE payroll in Frappe HR, covering limited and unlimited contract types."
+---
+
+Frappe HR supports UAE-specific payroll compliance through pre-configured End-of-Service Gratuity (EOSG) rules. These rules are installed automatically when you run the setup for a UAE company.
+
+## Setup
+
+The UAE regional setup creates three Gratuity Rule documents based on UAE Labour Law. To run setup manually:
+
+```bash
+bench --site your-site.com execute hrms.regional.united_arab_emirates.setup.setup
+```
+
+## End-of-Service Gratuity
+
+Under UAE Labour Law, employees who complete at least one year of continuous service are entitled to an end-of-service gratuity payment. The amount depends on the contract type, the reason for leaving (termination or resignation), and the number of completed years of service.
+
+Frappe HR calculates gratuity using the **Gratuity** doctype. Assign one of the pre-configured rules to the Gratuity document for the employee.
+
+### Gratuity rules
+
+Three rules are installed for UAE:
+
+#### Rule Under Limited Contract (UAE)
+
+Applies when the employee is on a fixed-term (limited) contract, regardless of whether the separation is termination or resignation.
+
+- **Calculation basis**: Sum of all previous slabs
+- **Work experience method**: Take exact completed years
+- **Minimum years**: 1
+
+| Completed years | Daily wage fraction |
+|---|---|
+| Less than 1 year | 0 (no gratuity) |
+| 1 to 5 years | 21/30 of daily wage per year |
+| More than 5 years | 1 full daily wage per year |
+
+#### Rule Under Unlimited Contract on termination (UAE)
+
+Applies when an employee on an open-ended (unlimited) contract is terminated by the employer.
+
+- **Calculation basis**: Current slab
+- **Work experience method**: Take exact completed years
+- **Minimum years**: 1
+
+| Completed years | Daily wage fraction |
+|---|---|
+| Less than 1 year | 0 (no gratuity) |
+| 1 to 5 years | 21/30 of daily wage per year |
+| More than 5 years | 1 full daily wage per year |
+
+#### Rule Under Unlimited Contract on resignation (UAE)
+
+Applies when an employee on an unlimited contract voluntarily resigns. Gratuity is reduced for shorter service periods.
+
+- **Calculation basis**: Current slab
+- **Work experience method**: Take exact completed years
+- **Minimum years**: 1
+
+| Completed years | Daily wage fraction |
+|---|---|
+| Less than 1 year | 0 (no gratuity) |
+| 1 to 3 years | (1/3) × (21/30) of daily wage per year |
+| 3 to 5 years | (2/3) × (21/30) of daily wage per year |
+| More than 5 years | 21/30 of daily wage per year |
+
+<Info>
+The fractions `21/30` and `1` reflect UAE Labour Law Article 132, which grants 21 calendar days' basic wage per year for the first five years and 30 days' wage per year thereafter.
+</Info>
+
+## Processing gratuity
+
+<Steps>
+  <Step title="Create a Gratuity document">
+    Go to **Payroll > Gratuity > New**. Select the employee and their last working date.
+  </Step>
+  <Step title="Select the applicable rule">
+    Choose the correct UAE gratuity rule based on the employee's contract type and reason for separation.
+  </Step>
+  <Step title="Verify calculated amount">
+    The system calculates the gratuity amount based on the applicable earnings and the slab fractions in the selected rule. Review the computed figure.
+  </Step>
+  <Step title="Submit and process payment">
+    Submit the Gratuity document and process the payment through the payroll or accounts module.
+  </Step>
+</Steps>
+
+<Warning>
+Verify that the employee's contract type and separation reason are correctly identified before selecting a rule. Using the wrong rule will result in an incorrect gratuity amount.
+</Warning>
+
+## Applicable earnings
+
+UAE Labour Law calculates gratuity on the employee's **basic salary** (excluding allowances). In Frappe HR, set up the applicable earnings component in the **Gratuity Rule** or in the salary structure to ensure the correct base is used for calculation.
+
+## Regional scope
+
+Unlike India, the UAE regional module does not currently register `regional_overrides` in `hooks.py`. The UAE compliance is delivered entirely through the pre-configured Gratuity Rule documents created during setup. No custom functions override the standard payroll calculation path.

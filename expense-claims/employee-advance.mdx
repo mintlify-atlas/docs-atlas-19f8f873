@@ -1,0 +1,122 @@
+---
+title: "Employee advances"
+description: "Disburse advance funds to employees before incurring expenses, then reconcile and return any unused balance."
+---
+
+An Employee Advance lets you pay an employee in advance for upcoming expenses — for example, before a business trip. The advance is tracked as a receivable until it is either claimed against an Expense Claim or returned.
+
+## Creating an employee advance request
+
+<Steps>
+  <Step title="Open a new Employee Advance">
+    Go to **HR > Expense Claims > Employee Advance > New**.
+  </Step>
+  <Step title="Fill in the request details">
+    | Field | Description |
+    |---|---|
+    | **Employee** | The employee requesting the advance. |
+    | **Posting Date** | Date of the advance request. |
+    | **Purpose** | Description of why the advance is needed. Required. |
+    | **Advance Amount** | The amount requested. |
+    | **Currency** | Currency of the advance; must match the currency of the Advance Account. |
+    | **Mode of Payment** | Bank or Cash account through which the advance will be paid. |
+    | **Advance Account** | The receivable account used to track the outstanding advance. Auto-populated from the company's Default Employee Advance Account if the advance is in the company currency. |
+    | **Department** | Optional department for reporting. |
+  </Step>
+  <Step title="Submit the request">
+    Save and submit the document. If **Advance Account** is not set and the advance is in a foreign currency, the system requires you to set the account manually before submitting.
+  </Step>
+</Steps>
+
+<Note>
+The **Advance Account** must be of type **Receivable** in the Chart of Accounts. The system validates this and throws an error if the account type is incorrect or the currency does not match.
+</Note>
+
+## Advance account setup
+
+Before using Employee Advances, set a default advance account in the company record:
+
+1. Go to **Accounting > Company** and open your company.
+2. In the **HR and Payroll** tab, set **Default Employee Advance Account**.
+3. This account must be a Receivable-type account in the Chart of Accounts.
+
+For multi-currency advances, you must create a separate receivable account in the advance currency and link it directly on the Employee Advance document.
+
+## Disbursing the advance
+
+After the advance is submitted and approved, disburse the funds:
+
+<Steps>
+  <Step title="Create a Bank Entry">
+    Click **Make > Bank Entry** on the submitted Employee Advance. A Journal Entry of type **Bank Entry** is pre-filled:
+    - Debit: Employee Advance (Receivable) account for the advance amount, linked to the employee as party.
+    - Credit: Bank or Cash account (from Mode of Payment).
+  </Step>
+  <Step title="Submit the Journal Entry">
+    Review and submit the Journal Entry. The Employee Advance `paid_amount` is updated via the **Advance Payment Ledger Entry** and the status changes to **Paid**.
+  </Step>
+</Steps>
+
+<Info>
+If **Make Payment via Journal Entry** is enabled in Accounts Settings, the Bank Entry button is visible directly on the Employee Advance form. Otherwise, use a standard Payment Entry linked to the Employee Advance.
+</Info>
+
+## Advance status reference
+
+| Status | Meaning |
+|---|---|
+| **Draft** | Request has not been submitted. |
+| **Unpaid** | Submitted; disbursement is pending. |
+| **Paid** | Funds have been disbursed to the employee. |
+| **Claimed** | The full paid amount has been reconciled against an approved Expense Claim. |
+| **Returned** | The employee has returned the full advance without claiming expenses. |
+| **Partly Claimed and Returned** | Part of the advance was applied to an Expense Claim and the remainder was returned. |
+| **Cancelled** | Advance has been cancelled. |
+
+## Reconciling an advance against an expense claim
+
+Once the employee returns and submits their Expense Claim, link the advance to automatically offset the payable amount:
+
+1. Open the Expense Claim.
+2. In the **Advance Payments** table, select the relevant **Employee Advance**.
+3. Enter the **Allocated Amount** (up to the paid amount on the advance).
+4. On submission of the Expense Claim, the system:
+   - Credits the Employee Advance (Receivable) account by the allocated amount, reducing the outstanding advance balance.
+   - Reduces the net amount reimbursable to the employee.
+   - Updates `claimed_amount` on the Employee Advance.
+5. The Employee Advance status updates to **Claimed** when the full paid amount is allocated.
+
+## Returning unused advance amounts
+
+If the employee spent less than the advance amount, the unused balance must be returned:
+
+<Steps>
+  <Step title="Create a return Journal Entry">
+    Click **Make > Return** on the Employee Advance. A Journal Entry is created to reverse the outstanding balance:
+    - Debit: Bank or Cash account.
+    - Credit: Employee Advance (Receivable) account.
+  </Step>
+  <Step title="Submit the return entry">
+    Submit the Journal Entry. The `return_amount` on the Employee Advance is updated and the status becomes **Returned** or **Partly Claimed and Returned** as appropriate.
+  </Step>
+</Steps>
+
+<Tip>
+Enable **Repay Unclaimed Amount from Salary** on the Employee Advance to automatically deduct any unclaimed balance from the employee's next salary run instead of requiring a manual return.
+</Tip>
+
+## Accounting entries summary
+
+| Event | Debit | Credit |
+|---|---|---|
+| Advance disbursed | Employee Advance (Receivable) | Bank / Cash |
+| Advance allocated to Expense Claim | Employee Payable | Employee Advance (Receivable) |
+| Unused advance returned | Bank / Cash | Employee Advance (Receivable) |
+| Exchange gain on advance | Employee Payable | Exchange Gain/Loss account |
+| Exchange loss on advance | Exchange Gain/Loss account | Employee Payable |
+
+## Validation rules
+
+- The `paid_amount` on an advance cannot exceed the `advance_amount`.
+- The `return_amount` cannot exceed the unclaimed balance (`paid_amount - claimed_amount`).
+- Cancellation of the advance unlinks related Payment Entries if **Unlink Payment on Cancellation of Employee Advance** is enabled in HR Settings.

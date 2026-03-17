@@ -1,0 +1,136 @@
+---
+title: "Frappe Framework"
+description: "How Frappe HR leverages Frappe Framework features including the DocType system, scheduler, REST API, workflow engine, and role-based permissions."
+---
+
+Frappe HR is built on [Frappe Framework](https://frappeframework.com), a full-stack Python/JavaScript web application framework. Understanding how Frappe HR uses core framework features helps you customize and extend the application.
+
+## DocType system
+
+Every data entity in Frappe HR — Employee, Salary Structure, Leave Application, Expense Claim — is a **DocType**. DocTypes define the database schema, form layout, field validations, and permissions in a single JSON configuration file.
+
+Frappe HR stores its DocType definitions under:
+```
+hrms/hr/doctype/       # HR module doctypes
+hrms/payroll/doctype/  # Payroll module doctypes
+```
+
+Each DocType directory contains:
+- `<doctype>.json` — Schema definition
+- `<doctype>.py` — Controller (Python business logic)
+- `<doctype>.js` — Client-side logic
+- `test_<doctype>.py` — Test file
+
+## Workflow engine
+
+Frappe Framework includes a built-in **Workflow** engine that enables multi-step approval processes. Frappe HR uses workflows for:
+
+- Leave Application approvals (configurable multi-level flow)
+- Expense Claim approvals (with optional department-level routing)
+- Employee Onboarding and Separation task tracking
+
+Workflows are created and managed via **Settings → Workflow** in the Frappe desk. Each workflow defines states (e.g., Draft, Pending Approval, Approved) and transitions (which role can move between states).
+
+## Scheduled tasks
+
+Frappe HR registers its automated tasks in `hooks.py` under `scheduler_events`. The scheduler runs these tasks at the configured frequency:
+
+| Frequency | Tasks |
+|---|---|
+| **All** (every tick) | Interview reminders (`send_interview_reminder`) |
+| **Hourly** | Daily work summary email trigger |
+| **Hourly Long** | Shift check-in sync, auto-attendance processing, shift schedule auto-creation |
+| **Daily** | Birthday reminders, work anniversary reminders, daily work summary dispatch, interview feedback reminders, expired job opening closure |
+| **Daily Long** | Leave allocation expiry processing, auto leave encashment generation, earned leave allocation |
+| **Weekly** | Advance holiday/anniversary/birthday reminders |
+| **Monthly** | Advance monthly reminders |
+
+To trigger a scheduled task manually during development:
+```bash
+bench --site hrms.localhost execute hrms.controllers.employee_reminders.send_birthday_reminders
+```
+
+## REST API
+
+Frappe Framework automatically generates a REST API for every DocType. Any method decorated with `@frappe.whitelist()` is also exposed as an API endpoint.
+
+**Standard DocType endpoints:**
+```
+GET    /api/resource/Employee
+GET    /api/resource/Employee/{name}
+POST   /api/resource/Employee
+PUT    /api/resource/Employee/{name}
+DELETE /api/resource/Employee/{name}
+```
+
+**Whitelisted method endpoints:**
+```
+POST /api/method/hrms.hr.utils.get_matching_queries
+```
+
+Authentication uses Frappe's session-based auth or API key/secret pairs. Token-based auth is also supported.
+
+<Info>
+The complete REST API reference for any Frappe site can be explored at `/api/method/frappe.utils.make_random_string` or via the API Explorer in Frappe Desk under **Settings → API Access**.
+</Info>
+
+## Role-based permissions
+
+Frappe Framework enforces permissions at the DocType level. Each permission rule specifies:
+- **Role** — Which role the rule applies to
+- **Document-level permissions** — Read, Write, Create, Delete, Submit, Cancel, Amend
+- **Field-level permissions** — Restrict access to specific fields
+
+Frappe HR defines permissions directly in each DocType's JSON file. For example, HR Settings grants write access to HR Manager and System Manager but only read access to HR User and Employee.
+
+User roles are assigned in **Settings → User**. See [Roles and permissions](/guides/roles-permissions) for HR-specific role guidance.
+
+## Email notifications
+
+Frappe Framework provides an Email Template system and a built-in email queue. Frappe HR uses `frappe.sendmail()` and scheduled tasks to deliver notifications. Templates use Jinja2 syntax and have access to the full document context.
+
+See [Notifications](/guides/notifications) for configuration details.
+
+## Frappe Bench CLI commands for Frappe HR
+
+Frappe Bench is the command-line tool for managing Frappe sites and apps.
+
+**Common commands:**
+
+```bash
+# Install Frappe HR on a site
+bench --site hrms.localhost install-app hrms
+
+# Uninstall Frappe HR
+bench --site hrms.localhost uninstall-app hrms
+
+# Run database migrations after an update
+bench --site hrms.localhost migrate
+
+# Run all Frappe HR tests
+bench --site hrms.localhost run-tests --app hrms
+
+# Run tests for a specific module
+bench --site hrms.localhost run-tests --app hrms --module hrms.payroll.doctype.salary_slip.test_salary_slip
+
+# Execute a one-off Python function
+bench --site hrms.localhost execute hrms.controllers.employee_reminders.send_birthday_reminders
+
+# Update Frappe HR from the repository
+bench update --apps hrms
+
+# Build JavaScript assets
+bench build --apps hrms
+```
+
+## Frappe UI and the frontend app
+
+The Frappe HR desk UI (the people-focused SPA) is built with **Frappe UI**, a Vue 3 component library developed by Frappe.
+
+Source location:
+```
+hrms/public/    # Static assets
+frontend/       # Vue 3 SPA (Frappe UI)
+```
+
+The frontend communicates with the backend exclusively through Frappe's REST API and socket connections, making Frappe HR's frontend independently deployable.

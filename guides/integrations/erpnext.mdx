@@ -1,0 +1,144 @@
+---
+title: "ERPNext integration"
+description: "How Frappe HR integrates with ERPNext for accounting, payroll journal entries, expense claim payables, and bank reconciliation."
+---
+
+Frappe HR requires ERPNext as a dependency. The two applications share doctypes and integrate at the accounting layer so that HR transactions automatically create the correct accounting entries in ERPNext's ledger.
+
+```python
+# hooks.py
+required_apps = ["frappe/erpnext"]
+```
+
+<Info>
+Frappe HR is pinned to the same major version as ERPNext. Both apps must run on the same Frappe Framework version. See [pyproject.toml](https://github.com/frappe/hrms/blob/develop/pyproject.toml) for the exact version constraints:
+
+```toml
+[tool.bench.frappe-dependencies]
+frappe = ">=17.0.0-dev,<18.0.0"
+erpnext = ">=17.0.0-dev,<18.0.0"
+```
+</Info>
+
+## Shared doctypes
+
+Frappe HR extends and relies on the following ERPNext/Frappe Framework doctypes:
+
+| Doctype | Owned by | How Frappe HR uses it |
+|---|---|---|
+| **Employee** | ERPNext | Extended via `EmployeeMaster` override class. Frappe HR adds HR-specific fields, approver logic, and onboarding/separation workflows. |
+| **Company** | ERPNext | Frappe HR reads default accounts (salary payable, expense payable) from Company and creates fixtures on company setup. |
+| **Department** | ERPNext | Frappe HR adds leave approver and expense approver fields via `doctype_js`. |
+| **Holiday List** | ERPNext | Used for leave calculations, payroll working day counts, and the Employees Working on a Holiday report. |
+| **Timesheet** | ERPNext | Extended via `EmployeeTimesheet` override. Used in payroll for hourly salary structures and the Employee Hours Utilization report. |
+| **Payment Entry** | ERPNext | Extended via `EmployeePaymentEntry` override. Triggers expense claim payment status updates on submit/cancel. |
+| **Journal Entry** | ERPNext | Used to settle expense claims and salary withholding. Frappe HR hooks into Journal Entry submit/cancel events to synchronize payment status. |
+
+## Payroll accounting
+
+When a Payroll Entry is submitted, Frappe HR creates Journal Entries in ERPNext that book the payroll liability:
+
+- **Debit:** Salary expense accounts (one entry per salary component mapped to an account)
+- **Credit:** Salary Payable account (configured on the Company)
+
+When payroll is paid, a second Journal Entry or Payment Entry clears the payable:
+
+- **Debit:** Salary Payable
+- **Credit:** Bank/Cash account
+
+```python
+# hooks.py — Payroll Entry is registered as a period-closing doctype
+period_closing_doctypes = ["Payroll Entry"]
+```
+
+<Tip>
+To book payroll payable per individual employee (rather than as a single aggregated entry), enable **Process Payroll Accounting Entry based on Employee** in Payroll Settings.
+</Tip>
+
+## Expense claim accounting
+
+Expense Claims integrate with ERPNext's accounts payable system:
+
+1. When an Expense Claim is **submitted**, a Journal Entry is created debiting the relevant expense accounts and crediting the Employee Payable account.
+2. When a **Payment Entry** is submitted against the expense claim, it settles the payable and marks the claim as paid.
+3. When a Payment Entry is **cancelled**, Frappe HR automatically resets the expense claim payment status.
+
+```python
+# hooks.py — Payment Entry events
+doc_events = {
+    "Payment Entry": {
+        "on_submit": "hrms.hr.doctype.expense_claim.expense_claim.update_payment_for_expense_claim",
+        "on_cancel": "hrms.hr.doctype.expense_claim.expense_claim.update_payment_for_expense_claim",
+        "on_update_after_submit": "hrms.hr.doctype.expense_claim.expense_claim.update_payment_for_expense_claim",
+    },
+}
+```
+
+Expense Claims also participate in ERPNext's bank reconciliation:
+
+```python
+# hooks.py
+bank_reconciliation_doctypes = ["Expense Claim"]
+```
+
+This means Expense Claims appear as matching candidates in **Bank Transaction** reconciliation, so you can match salary and expense payments directly to bank statement lines.
+
+## Employee Advance accounting
+
+Employee Advances create a receivable entry in ERPNext:
+
+- **Debit:** Employee Advance (Receivable) account
+- **Credit:** Bank/Cash account
+
+When the employee submits an Expense Claim against the advance, the advance is offset:
+
+- **Debit:** Expense Account
+- **Credit:** Employee Advance (Receivable)
+
+```python
+# hooks.py — Employee Advance is registered as an advance payment payable doctype
+advance_payment_payable_doctypes = ["Leave Encashment", "Gratuity", "Employee Advance"]
+```
+
+## Leave Encashment and Gratuity
+
+Leave Encashment and Gratuity are also registered as advance payment payable doctypes, meaning they generate payable accounting entries through the same mechanism as Employee Advance.
+
+## Accounting dimensions
+
+Frappe HR supports ERPNext's Accounting Dimensions feature on the following doctypes, allowing cost center and project-level allocation of HR expenses:
+
+```python
+# hooks.py
+accounting_dimension_doctypes = [
+    "Expense Claim",
+    "Expense Claim Detail",
+    "Expense Taxes and Charges",
+    "Payroll Entry",
+    "Leave Encashment",
+]
+```
+
+## Installing Frappe HR with ERPNext
+
+<Steps>
+  <Step title="Install ERPNext first">
+    ```bash
+    bench get-app erpnext
+    bench --site yoursite.localhost install-app erpnext
+    ```
+  </Step>
+  <Step title="Install Frappe HR">
+    ```bash
+    bench get-app hrms
+    bench --site yoursite.localhost install-app hrms
+    ```
+  </Step>
+  <Step title="Configure default accounts">
+    Go to **ERPNext → Company** and verify that the Salary Payable and Default Employee Advance Account fields are populated.
+  </Step>
+</Steps>
+
+<Warning>
+Installing Frappe HR before ERPNext will fail. The dependency check in `hooks.py` enforces ERPNext as a required app.
+</Warning>

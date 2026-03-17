@@ -1,0 +1,75 @@
+---
+title: "Performance management overview"
+description: "Understand how Frappe HR structures the complete performance review process, from templates to final scores."
+---
+
+Frappe HR provides a structured performance management system that covers goal-setting, appraisal cycles, self-evaluation, peer feedback, and final scoring. The process is designed around a set of linked documents that work together to give both employees and managers a clear view of performance over any given review period.
+
+## How the process works
+
+The performance management flow moves through six stages:
+
+<Steps>
+  <Step title="Set up an Appraisal Template">
+    HR creates one or more Appraisal Templates that define which Key Result Areas (KRAs) are evaluated and their relative weightages. Templates also specify rating criteria used in self-appraisals and feedback forms. Templates are typically created per designation and reused across cycles.
+  </Step>
+  <Step title="Create an Appraisal Cycle">
+    An Appraisal Cycle defines the review period (start date, end date) and the employees being reviewed (appraisees). Each appraisee is linked to an Appraisal Template. The cycle controls the KRA evaluation method and the final score formula.
+  </Step>
+  <Step title="Employees set Goals">
+    Once a cycle is active, employees create individual Goals and link them to the cycle and a KRA. Goals have a progress percentage that drives the automated KRA scores on the Appraisal document.
+  </Step>
+  <Step title="Self-evaluation">
+    Each employee completes the **Self Appraisal** tab on their Appraisal document — rating themselves against each criterion defined in the template and writing reflections.
+  </Step>
+  <Step title="Managers and peers submit Feedback">
+    Reviewers submit Employee Performance Feedback documents that are linked to the appraisee's Appraisal. Each feedback document contains criterion-level ratings and a free-text comment. Multiple reviewers can submit feedback for the same employee.
+  </Step>
+  <Step title="Final score calculated">
+    The Appraisal document aggregates the Goal Score, the average Feedback Score, and the Self Appraisal Score into a Final Score. By default this is the arithmetic mean of the three; HR can configure a custom formula per cycle.
+  </Step>
+</Steps>
+
+## Key concepts
+
+| Concept | Description |
+| --- | --- |
+| **KRA (Key Result Area)** | A named competency or responsibility area (e.g., "Product Delivery", "Customer Success"). KRAs are shared across the organisation and reused in multiple templates. |
+| **Goal** | An individual target owned by an employee for a specific cycle, aligned to a KRA. Goal progress (0–100%) automatically rolls up into the KRA score on the appraisal. |
+| **Appraisee** | An employee who has an active Appraisal document in a given cycle. |
+| **Appraisal Cycle** | The container document for a review period. It holds the list of appraisees, cycle dates, evaluation settings, and status. |
+| **Self Score** | The weighted average of the employee's own ratings across criteria in the Self Appraisal tab. |
+| **Feedback Score** | The average total score across all submitted Employee Performance Feedback documents for the employee in the cycle. |
+| **Final Score** | The combined performance score, by default the mean of Goal Score, Feedback Score, and Self Score. |
+
+<Info>
+The Appraisal document uses the naming series `HR-APR-.YYYY.-`. Duplicate appraisals for the same employee and cycle are prevented at save time.
+</Info>
+
+## Document relationships
+
+```
+Appraisal Template
+  └── used by ──▶ Appraisal Cycle (per appraisee)
+                    └── creates ──▶ Appraisal
+                                      ├── tracks ──▶ Goals (via KRA)
+                                      ├── receives ──▶ Employee Performance Feedback
+                                      └── includes ──▶ Self Ratings
+```
+
+## Explore the section
+
+<CardGroup cols={2}>
+  <Card title="Appraisal cycles" icon="arrows-rotate" href="/performance/appraisal-cycle">
+    Create and manage review periods, add appraisees in bulk, and track cycle status from draft to completion.
+  </Card>
+  <Card title="Goals and KRAs" icon="bullseye" href="/performance/goals-kra">
+    Define Key Result Areas and set individual employee goals that automatically update appraisal scores.
+  </Card>
+  <Card title="Performance feedback" icon="comments" href="/performance/feedback">
+    Collect 360° feedback from managers and peers with criterion-based ratings and written comments.
+  </Card>
+  <Card title="Appraisal templates" icon="file-lines" href="/performance/appraisal-template">
+    Configure reusable templates with KRA weightages and rating criteria for each designation.
+  </Card>
+</CardGroup>

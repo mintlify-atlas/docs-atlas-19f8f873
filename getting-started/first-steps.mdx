@@ -1,0 +1,139 @@
+---
+title: "First steps"
+description: "Configure Frappe HR after installation: set up your company, add employees, and prepare the system for leave and payroll management."
+---
+
+After installing Frappe HR, there are a few configuration steps to complete before you can use leave management, payroll, and attendance features. This guide walks you through the minimum setup required to get your HR system running.
+
+<Info>
+  Frappe HR requires at least one **Company** record in ERPNext before you can create employees or run payroll. If you are starting from a fresh installation, creating a company is the first thing to do.
+</Info>
+
+## Setup checklist
+
+<Steps>
+  <Step title="Log in as Administrator">
+    Open your Frappe HR site and log in with your administrator credentials.
+
+    - For a local bench install: `http://hrms.localhost:8080`
+    - For Docker: `http://localhost:8000`
+    - Username: **Administrator**
+
+    After logging in, open the **Frappe HR** app from the home screen. This takes you to the HR workspace at `/desk/people`.
+  </Step>
+
+  <Step title="Set up a company">
+    Frappe HR is tightly integrated with ERPNext. All employees, salary structures, and payroll entries belong to a company. You must create at least one company before adding employees.
+
+    1. In the search bar, type **Company** and open the doctype.
+    2. Click **New**.
+    3. Fill in the **Company Name**, **Default Currency**, and **Country**.
+    4. Save the record.
+
+    <Tip>
+      The country you select determines which regional payroll features are available. For example, selecting **India** unlocks HRA exemption calculations and professional tax configurations.
+    </Tip>
+  </Step>
+
+  <Step title="Configure HR settings">
+    HR Settings is the central configuration doctype for system-wide HR behaviour. Review it before creating employees.
+
+    1. Search for **HR Settings** in the search bar and open it.
+    2. Review the following key settings:
+
+    | Setting | Description |
+    |---------|-------------|
+    | **Leave Approver Mandatory** | Requires every leave application to have an approver assigned |
+    | **Expense Approver Mandatory** | Requires expense claims to have an approver |
+    | **Max Working Hours Against Timesheet** | Cap on hours per timesheet entry |
+    | **Auto Leave Encashment** | Automatically creates leave encashment entries at period end |
+    | **Retirement Age** | Used to flag employees approaching retirement |
+
+    3. Save your changes.
+
+    <Note>
+      You can return to HR Settings at any time to adjust these values as your processes evolve.
+    </Note>
+  </Step>
+
+  <Step title="Add your first employee">
+    With a company in place, you can now create an employee record.
+
+    1. Navigate to **HR > Employee > New Employee** or search for **Employee** and click **New**.
+    2. Fill in the required fields:
+       - **First Name** and **Last Name**
+       - **Company** — select the company you created
+       - **Date of Joining**
+       - **Employment Type** (Full-time, Part-time, Contract, etc.)
+       - **Department** and **Designation** — create these on the fly if they don't exist yet
+    3. In the **Job Profile** section, set the **Reports To** field if you want to configure an approval chain.
+    4. Save the employee.
+
+    <Tip>
+      Add the employee's work email in the **Contact Details** tab. This is used for leave notifications, interview reminders, and daily work summaries.
+    </Tip>
+  </Step>
+
+  <Step title="Set up a holiday list">
+    A Holiday List defines the public holidays and weekly off days for your organisation. It is required to correctly calculate leave balances and attendance.
+
+    1. Search for **Holiday List** and click **New**.
+    2. Enter a **Holiday List Name** (for example, "India 2025" or "US Holidays 2025").
+    3. Set the **From Date** and **To Date** for the year.
+    4. Click **Add Weekly Holidays** to automatically mark your weekly off days (for example, Saturday and Sunday).
+    5. Add individual public holidays in the **Holidays** table.
+    6. Save the holiday list.
+
+    To assign this list to your company, open the **Company** record and set the **Default Holiday List** field.
+
+    <Note>
+      You can also assign different holiday lists to individual employees in the **Attendance and Leave Details** section of the Employee record. Employee-level holiday lists take priority over the company default.
+    </Note>
+  </Step>
+
+  <Step title="Create a leave policy and assign it">
+    A Leave Policy defines how many days of each leave type employees are entitled to per year. Assigning a policy to an employee allocates those leave days to their account.
+
+    **Create leave types**
+
+    1. Search for **Leave Type** and create the types you need (for example, Casual Leave, Sick Leave, Earned Leave).
+    2. Configure each type's settings: whether it carries forward, whether it is encashable, and whether it requires allocation.
+
+    **Create a leave policy**
+
+    1. Search for **Leave Policy** and click **New**.
+    2. Give it a descriptive name (for example, "Standard Leave Policy 2025").
+    3. In the **Leave Policy Details** table, add each leave type and the number of days allocated per year.
+    4. Save the policy.
+
+    **Assign the policy to an employee**
+
+    1. Search for **Leave Policy Assignment** and click **New**.
+    2. Select the **Employee** and the **Leave Policy**.
+    3. Set the **Effective From** date and the **Leave Period** (or enter a custom date range).
+    4. Click **Grant Leave** to create the leave allocations for that employee.
+
+    <Tip>
+      Use **Leave Period** to bulk-assign policies to all employees at once via the **Grant Leaves** button on the Leave Period doctype. This is faster than creating individual assignments.
+    </Tip>
+  </Step>
+</Steps>
+
+## What to set up next
+
+With a company, at least one employee, a holiday list, and a leave policy in place, you can explore the rest of Frappe HR:
+
+<CardGroup cols={2}>
+  <Card title="Payroll" icon="money-bill" href="/payroll/overview">
+    Create salary structures, assign them to employees, and run your first payroll entry.
+  </Card>
+  <Card title="Leave & attendance" icon="calendar" href="/leave-attendance/overview">
+    Configure shift schedules, attendance auto-marking, and leave approval workflows.
+  </Card>
+  <Card title="HR settings" icon="sliders" href="/guides/hr-settings">
+    Review all system-wide HR configuration options in detail.
+  </Card>
+  <Card title="Employee management" icon="users" href="/employee-management/overview">
+    Manage onboarding checklists, transfers, promotions, and exit interviews.
+  </Card>
+</CardGroup>

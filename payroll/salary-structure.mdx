@@ -1,0 +1,141 @@
+---
+title: "Salary structures"
+description: "Create salary components with formula-based amounts, combine them into salary structures, and assign structures to employees."
+---
+
+A salary structure is a template that defines what an employee earns and what is deducted from their pay each period. You build structures from individual **Salary Components**, then link them to employees through a **Salary Structure Assignment**.
+
+## Salary components
+
+A **Salary Component** is the smallest unit of pay — a single earning or deduction item. Go to **Payroll → Salary Component → New** to create one.
+
+### Component fields
+
+| Field | Description |
+|---|---|
+| **Name / Abbr** | The component name and a short abbreviation (e.g., `BS` for Basic Salary). The abbreviation is used in formula expressions. |
+| **Type** | `Earning` or `Deduction`. |
+| **Depends on Payment Days** | When enabled, the component amount is prorated based on actual working days in the slip period. |
+| **Is Tax Applicable** | Whether this earning is included in the taxable income base. |
+| **Variable Based on Taxable Salary** | For deductions only. Marks the component as an auto-calculated income tax component driven by the Income Tax Slab. |
+| **Statistical Component** | The value is computed but not added to totals. Use this for intermediate reference values that other formulas need. |
+| **Exempted from Income Tax** | Deduction amount is subtracted from taxable income before tax is calculated, without requiring a declaration. |
+| **Arrear Component** | The component is included in arrear difference calculations. |
+| **Accrual Component** | Amount accrues in the Employee Benefit Ledger and can be claimed later rather than paid immediately. |
+| **Remove if Zero Valued** | Hides the row on the salary slip when the computed amount is zero. |
+
+### Formula and condition
+
+Each component can have a **Condition** and a **Formula** written as Python expressions. The condition is evaluated first; if it returns false the component is skipped entirely.
+
+Available variables in formulas:
+
+- `base` — the base salary from the Salary Structure Assignment
+- Abbreviations of other components in the same structure (e.g., `BS`, `HRA`)
+- Employee fields: `employment_type`, `branch`, `designation`
+- Salary slip fields: `payment_days`, `leave_without_pay`
+
+#### Common component examples
+
+```python
+# Basic Salary — fixed at base
+Formula: base
+```
+
+```python
+# House Rent Allowance — 40% of base
+Formula: base * 0.4
+```
+
+```python
+# Provident Fund — 12% of Basic Salary
+# Assumes Basic Salary abbreviation is "BS"
+Formula: BS * 0.12
+```
+
+```python
+# Conditional Transport Allowance — only for non-remote employees
+Condition: employment_type != "Remote"
+Formula: 2000
+```
+
+```python
+# Leave Without Pay deduction
+# Deduct daily rate for each LWP day
+Formula: (base / 30) * leave_without_pay
+```
+
+<Warning>
+Do not enable both **Depends on Payment Days** and a formula that already references a payment-days-based component (such as `BS` when BS itself depends on payment days). This would cause the proration to be applied twice.
+</Warning>
+
+### Flexible benefits
+
+When **Is Flexible Benefit** is enabled on an Earning component, employees can declare how much of the benefit they want to claim up to a configured maximum. Three payout methods are available:
+
+- **Accrue and payout at end of payroll period** — accrues monthly, paid in the final cycle.
+- **Accrue per cycle, pay only on claim** — accrues monthly, paid when the employee submits a benefit claim.
+- **Allow claim for full benefit amount** — the full annual benefit amount can be claimed at any time.
+
+### Component accounts
+
+Each component can have per-company GL accounts configured in its **Accounts** table. When a payroll entry is submitted, salary components are posted to these accounts. If no per-company account is set, the system uses the default payroll accounts from the Company master.
+
+## Salary structures
+
+A **Salary Structure** groups components into a reusable pay template. Go to **Payroll → Salary Structure → New**.
+
+### Structure fields
+
+| Field | Description |
+|---|---|
+| **Company** | The company this structure belongs to. |
+| **Payroll Frequency** | `Monthly`, `Fortnightly`, `Bimonthly`, `Weekly`, or `Daily`. |
+| **Currency** | Pay currency for this structure. |
+| **Is Active** | Set to `No` to retire a structure without deleting it. |
+| **Leave Encashment Amount Per Day** | Daily rate used when an encashment is processed. |
+| **Max Benefits** | Upper limit for the sum of all flexible benefit components. |
+| **Salary Slip Based on Timesheet** | When enabled, earnings are derived from submitted timesheet hours rather than a fixed period. |
+| **Earnings** | Table of earning components with optional formula/amount overrides. |
+| **Deductions** | Table of deduction components with optional formula/amount overrides. |
+
+<Note>
+Formulas entered in the Earnings/Deductions table override the formula on the Salary Component. This lets you reuse the same component with different rates in different structures.
+</Note>
+
+### Previewing a salary slip
+
+From the Salary Structure form, click **Make Salary Slip** to preview a computed slip for a specific employee before running a full payroll entry. This is useful for verifying that formulas are correct.
+
+## Salary structure assignment
+
+A **Salary Structure Assignment** links a structure to a single employee with a base salary and an effective date. Go to **Payroll → Salary Structure Assignment → New**.
+
+| Field | Description |
+|---|---|
+| **Employee** | The employee receiving this structure. |
+| **Salary Structure** | The structure to apply. |
+| **From Date** | The date from which this assignment is effective. |
+| **Base** | The employee's base salary — the value the `base` variable resolves to in formulas. |
+| **Variable** | An optional variable component amount. |
+| **Income Tax Slab** | The tax slab to apply for this employee's income tax calculation. |
+| **Payroll Payable Account** | The liability account for this employee's payroll. Defaults to the company-level account. |
+
+### Bulk assignment
+
+To assign a structure to many employees at once, open the Salary Structure and click **Assign Salary Structure**. You can filter employees by branch, grade, department, or designation.
+
+```
+Salary Structure → Assign Salary Structure button
+  ↓
+Filter by: Department / Designation / Grade / Branch
+Set: Base, Variable, From Date, Income Tax Slab
+  ↓
+Creates individual Salary Structure Assignments for each matching active employee
+```
+
+<Info>
+If more than 20 employees match the filter, assignments are processed as a background job. A progress indicator is shown while the job runs.
+</Info>
+
+Any employee who already has an assignment for the same structure on the same date is skipped — the system will notify you of skipped records.

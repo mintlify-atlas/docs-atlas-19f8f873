@@ -1,0 +1,165 @@
+---
+title: "Development setup"
+description: "Set up a local Frappe HR development environment using Docker or Frappe Bench, and learn how to run tests and pre-commit hooks."
+---
+
+Frappe HR is an open-source project and welcomes contributions. This guide covers setting up a local development environment.
+
+## Prerequisites
+
+- Python 3.10 or higher
+- Node.js 18 or higher
+- Git
+- Frappe Bench (for local setup) or Docker + Docker Compose (for Docker setup)
+
+## Docker setup (recommended for quick start)
+
+Docker is the fastest way to get a working Frappe HR development environment without manually installing dependencies.
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/frappe/hrms
+    cd hrms/docker
+    ```
+  </Step>
+  <Step title="Start the containers">
+    ```bash
+    docker-compose up
+    ```
+    Wait for the setup script to create the site. This may take a few minutes on the first run.
+  </Step>
+  <Step title="Access the site">
+    Open `http://localhost:8000` in your browser.
+
+    Default credentials:
+    - **Username:** `Administrator`
+    - **Password:** `admin`
+  </Step>
+</Steps>
+
+## Local setup with Frappe Bench
+
+For active development where you need to modify Python or JavaScript files and see changes live, a local bench setup is preferred.
+
+<Steps>
+  <Step title="Install Frappe Bench">
+    Follow the [Frappe Bench installation guide](https://frappeframework.com/docs/user/en/installation) to set up bench and its system dependencies (MariaDB, Redis, etc.).
+  </Step>
+  <Step title="Start the bench server">
+    ```bash
+    bench start
+    ```
+    Keep this terminal running.
+  </Step>
+  <Step title="Create a new site and install apps">
+    In a separate terminal window:
+    ```bash
+    bench new-site hrms.localhost
+    bench get-app erpnext
+    bench get-app hrms
+    bench --site hrms.localhost install-app hrms
+    bench --site hrms.localhost add-to-hosts
+    ```
+  </Step>
+  <Step title="Access the site">
+    Open `http://hrms.localhost:8080` in your browser.
+  </Step>
+</Steps>
+
+<Note>
+Frappe HR requires ERPNext as a dependency. The `bench get-app erpnext` step must complete before installing `hrms`.
+</Note>
+
+## Running tests
+
+Frappe HR uses the Frappe test runner, which wraps pytest.
+
+**Run all Frappe HR tests:**
+```bash
+bench --site hrms.localhost run-tests --app hrms
+```
+
+**Run tests for a specific doctype:**
+```bash
+bench --site hrms.localhost run-tests --app hrms --module hrms.payroll.doctype.salary_slip.test_salary_slip
+```
+
+**Run a specific test method:**
+```bash
+bench --site hrms.localhost run-tests --app hrms --module hrms.payroll.doctype.salary_slip.test_salary_slip --test test_salary_slip_with_holidays
+```
+
+<Info>
+Tests run against the site database. Use a dedicated development site (`hrms.localhost`) for testing to avoid affecting production data.
+</Info>
+
+## Pre-commit hooks
+
+Frappe HR uses [pre-commit](https://pre-commit.com) to enforce code quality before each commit.
+
+**Install pre-commit:**
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+**Hooks configured in `.pre-commit-config.yaml`:**
+
+| Hook | Tool | What it checks |
+|---|---|---|
+| `trailing-whitespace` | pre-commit built-in | Removes trailing whitespace from Python/JS files |
+| `check-yaml` | pre-commit built-in | Validates YAML file syntax |
+| `no-commit-to-branch` | pre-commit built-in | Prevents direct commits to the `develop` branch |
+| `check-merge-conflict` | pre-commit built-in | Detects unresolved merge conflict markers |
+| `check-ast` | pre-commit built-in | Validates Python file syntax |
+| `prettier` | mirrors-prettier v3.1.0 | Formats JavaScript, TypeScript, Vue, CSS, and SCSS files |
+| `ruff` | ruff v0.3.7 | Lints Python files and applies auto-fixes |
+| `ruff-format` | ruff v0.3.7 | Formats Python code |
+
+**Run pre-commit manually:**
+```bash
+# Run on all staged files
+pre-commit run
+
+# Run on all files in the repository
+pre-commit run --all-files
+```
+
+## Contributing workflow
+
+<Steps>
+  <Step title="Fork the repository">
+    Fork [frappe/hrms](https://github.com/frappe/hrms) on GitHub.
+  </Step>
+  <Step title="Create a feature branch">
+    ```bash
+    git checkout -b feat/your-feature-name
+    ```
+  </Step>
+  <Step title="Make your changes">
+    Write your code and add tests for new functionality.
+  </Step>
+  <Step title="Run tests">
+    ```bash
+    bench --site hrms.localhost run-tests --app hrms
+    ```
+  </Step>
+  <Step title="Commit using conventional commit format">
+    ```bash
+    git commit -m "feat: add overtime slip auto-creation"
+    ```
+    See [Code guidelines](/guides/contributing/code-guidelines) for the full commit type reference.
+  </Step>
+  <Step title="Open a pull request">
+    Push your branch and open a PR against the `develop` branch of `frappe/hrms`.
+  </Step>
+</Steps>
+
+## Useful resources
+
+- [Issue Guidelines](https://github.com/frappe/erpnext/wiki/Issue-Guidelines)
+- [Pull Request Requirements](https://github.com/frappe/erpnext/wiki/Contribution-Guidelines)
+- [Security Vulnerabilities](https://erpnext.com/security)
+- [Frappe School](https://frappe.school) — Video courses on Frappe Framework development
+- [User Forum](https://discuss.erpnext.com/) — Community support

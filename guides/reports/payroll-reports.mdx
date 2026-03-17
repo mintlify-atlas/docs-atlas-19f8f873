@@ -1,0 +1,102 @@
+---
+title: "Payroll reports"
+description: "Overview of all built-in payroll reports in Frappe HR covering salary registers, bank remittances, income tax, and statutory deductions."
+---
+
+Frappe HR provides a set of payroll reports for salary auditing, bank payment processing, and statutory compliance. All reports are accessible from the **Payroll** module under **Reports**.
+
+## Salary reports
+
+### Salary Register
+
+The primary payroll audit report. Lists all salary slips for a given payroll period with each earning and deduction component shown as a separate column. Use this to verify payroll calculations before bank disbursement and to produce a complete payroll register for accounting.
+
+**Filters:** From Date, To Date, Company, Employee, Department, Designation, Currency
+
+### Accrued Earnings Report
+
+Shows salary components that have been accrued (earned but not yet paid in a submitted payroll entry). Use this to verify the accrual accounting entries posted for a given period match the expected payroll liability.
+
+**Filters:** From Date, To Date, Company, Department
+
+### Salary Payments Based on Payment Mode
+
+Groups salary payments by payment mode (e.g., bank transfer, cheque, cash). Use this to reconcile payroll disbursements against the payment modes configured in employee records and to prepare separate payment batches per mode.
+
+**Filters:** From Date, To Date, Company, Mode of Payment
+
+### Salary Payments via ECS
+
+Generates the Electronic Clearing Service (ECS) payment file for salary disbursements. Lists employees, their bank account details, and the net pay amount in the format required for bulk bank transfers. Primarily used in India for NACH/ECS salary disbursement.
+
+**Filters:** From Date, To Date, Company, Bank
+
+## Bank remittance
+
+### Bank Remittance
+
+Produces a bank-ready payment advice listing each employee's bank account number, IFSC/routing code, and net salary amount. Use this to prepare the bulk salary transfer file for your bank.
+
+**Filters:** From Date, To Date, Company, Bank Account
+
+## Tax and statutory deduction reports
+
+### Income Tax Computation
+
+Calculates the projected annual income tax liability for each employee based on their salary structure, declared investments, and applicable tax slab. Use this to review the tax withheld year-to-date versus the projected total liability and to identify employees who need to update their investment declarations.
+
+**Filters:** Company, Payroll Period, Employee, Department
+
+<Note>
+Income tax computation uses the tax slab configured in the Income Tax Slab doctype linked to the employee's salary structure assignment. For India-specific HRA exemption and marginal relief calculations, see the [India regional settings](/regional/india) page.
+</Note>
+
+### Income Tax Deductions
+
+Lists the actual income tax deducted from each employee's salary slip for a given period. Use this for reconciliation with the Income Tax Computation report and for generating Form 16/TDS filings.
+
+**Filters:** From Date, To Date, Company, Employee, Department
+
+### Professional Tax Deductions
+
+Lists Professional Tax (PT) deducted from salary slips per employee. Professional Tax is a state-level tax applicable in several Indian states. Use this report to prepare monthly PT challans and annual PT returns.
+
+**Filters:** From Date, To Date, Company, Employee, Department
+
+### Provident Fund Deductions
+
+Shows the Employee PF (EPF) contribution, Employer PF contribution, and Employee Pension Scheme (EPS) contribution deducted for each employee. Use this report to prepare the monthly PF challan and annual PF returns filed with the EPFO.
+
+**Filters:** From Date, To Date, Company, Employee, Department
+
+## Reading payroll reports
+
+| Report | Primary use case | Export format |
+|---|---|---|
+| Salary Register | Full payroll audit, accountant review | Excel, CSV |
+| Bank Remittance | Bank payment file preparation | Excel |
+| Salary Payments via ECS | NACH/ECS bulk disbursement | Excel |
+| Income Tax Computation | Annual tax liability review | Excel, CSV |
+| Income Tax Deductions | TDS reconciliation and Form 16 | Excel, CSV |
+| Professional Tax Deductions | State PT challan preparation | Excel, CSV |
+| Provident Fund Deductions | EPFO monthly challan | Excel, CSV |
+| Salary Payments Based on Payment Mode | Payment reconciliation per mode | Excel, CSV |
+| Accrued Earnings Report | Accrual accounting verification | Excel, CSV |
+
+## Exporting payroll reports
+
+<Steps>
+  <Step title="Apply filters">
+    Select the appropriate From Date, To Date, Company, and any other filters relevant to your report.
+  </Step>
+  <Step title="Run the report">
+    Click **Refresh** to generate the report data.
+  </Step>
+  <Step title="Export">
+    Click the **Export** button in the report toolbar and choose **Excel** or **CSV**.
+  </Step>
+</Steps>
+
+<Tip>
+For payroll register exports used in accounting, the Salary Register in Excel format includes all earning and deduction columns, making it easy to import into accounting tools or share with auditors.
+</Tip>

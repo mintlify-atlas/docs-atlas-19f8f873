@@ -1,0 +1,55 @@
+---
+title: "Expense claims overview"
+description: "Manage employee expense reimbursements, advances, and travel requests with integrated accounting in ERPNext."
+---
+
+Frappe HR provides a complete expense management workflow covering everything from raising a travel request before a trip to reconciling advances and submitting final expense claims for reimbursement. All transactions post directly to ERPNext's accounting ledgers.
+
+## How the workflow fits together
+
+<Steps>
+  <Step title="Request (optional)">
+    Employees submit a **Travel Request** before travelling. The request captures the itinerary, purpose, travel type (Domestic/International), estimated costs, and funding requirements. Once approved, it authorises the trip.
+  </Step>
+  <Step title="Advance (optional)">
+    If the employee needs funds upfront, they raise an **Employee Advance**. The advance is approved and disbursed via a Bank or Journal Entry, posting a debit to the configured Employee Advance (Receivable) account.
+  </Step>
+  <Step title="Claim">
+    After incurring expenses, the employee creates an **Expense Claim** listing each expense item with its type, claimed amount, and receipt attachment. They select an expense approver and submit the document.
+  </Step>
+  <Step title="Approval">
+    The expense approver reviews each line, sets a sanctioned amount (which may differ from the claimed amount), and sets the Approval Status to **Approved** or **Rejected**.
+  </Step>
+  <Step title="Payment">
+    Once approved, the payable amount (grand total minus any advance already allocated) is reimbursed to the employee via a **Payment Entry** or **Journal Entry** depending on your Accounts Settings.
+  </Step>
+</Steps>
+
+## ERPNext accounting integration
+
+Expense Claims extend ERPNext's `AccountsController`, so every approval and payment creates proper General Ledger entries:
+
+| Event | Debit | Credit |
+|---|---|---|
+| Claim approved | Expense account (per Expense Claim Type) | Employee Payable account |
+| Advance allocated | Employee Advance (Receivable) account | Employee Payable account |
+| Tax/charge added | Tax account head | Employee Payable account |
+| Payment made | Employee Payable account | Bank / Cash account |
+
+<Note>
+If **Make Payment via Journal Entry** is enabled in Accounts Settings, payments are created as Journal Entries instead of Payment Entries.
+</Note>
+
+## Section pages
+
+<CardGroup cols={2}>
+  <Card title="Expense claims" icon="receipt" href="/expense-claims/expense-claim">
+    Create, approve, and reimburse employee expense claims. Configure expense types, taxes, and advance reconciliation.
+  </Card>
+  <Card title="Employee advances" icon="money-bill-wave" href="/expense-claims/employee-advance">
+    Disburse advance funds to employees before travel or events, then reconcile against submitted claims.
+  </Card>
+  <Card title="Travel requests" icon="plane" href="/expense-claims/travel-request">
+    Raise and approve travel requests with itinerary and costing details before a trip begins.
+  </Card>
+</CardGroup>

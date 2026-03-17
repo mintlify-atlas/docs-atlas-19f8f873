@@ -1,0 +1,143 @@
+---
+title: "Employee profile"
+description: "Learn how to create and maintain the Employee record, including personal details, employment terms, approvers, and leave settings."
+---
+
+The **Employee** doctype is the central record for every person in your organisation. All other HR documents — leaves, payroll, expenses, appraisals — link back to this record.
+
+## What the employee record contains
+
+### Personal information
+
+- **Full name** — stored as `employee_name`
+- **Date of birth** — used to calculate the retirement date based on the age configured in **HR Settings**
+- **Gender**
+- **Personal email** — distinct from the company email used for system login
+- **Cell number**
+- **Emergency contacts** — name, relationship, and phone number
+
+### Employment details
+
+| Field | Description |
+|---|---|
+| **Company** | The legal entity the employee belongs to |
+| **Department** | Organisational unit (e.g. Engineering, Finance) |
+| **Designation** | Job title |
+| **Branch** | Physical office location |
+| **Employee Grade** | Grade level used for leave policies and promotions |
+| **Date of Joining** | Start date; used as the baseline for leave accrual |
+| **Employment Type** | e.g. Full-time, Part-time, Contract |
+| **Status** | `Active`, `Left`, `On Leave`, `Relieved` |
+
+### Work contact
+
+- **Company email** — the user account linked to the employee for system login
+- **Cell number** and office extension
+
+### Education and previous work experience
+
+The employee record has child tables for **Education** and **Previous Work Experience**. Use these to store qualifications and employment history brought in from the onboarding process or entered manually.
+
+### Salary details
+
+- **CTC** (Cost to Company) — updated automatically when an **Employee Promotion** is submitted
+- **Salary currency** — useful for multi-currency organisations
+- **Salary mode** — e.g. Bank Transfer, Cheque
+
+### Leave and attendance settings
+
+- **Leave approver** — the user who approves this employee's leave applications
+- **Expense approver** — the user who approves expense claims
+- **Holiday list** — defaults from the company or department setting
+- **Attendance device ID** — used for biometric device integration
+
+## Employee ID generation
+
+The employee ID (the document name) is auto-generated according to the **Employee Naming System** set in **HR Settings**. Three options are available:
+
+| Method | Behaviour |
+|---|---|
+| `Naming Series` | Auto-incremented series, e.g. `HR-EMP-00001` |
+| `Employee Number` | Uses the value you enter in the **Employee Number** field |
+| `Full Name` | Uses the employee's full name as the ID |
+
+<Warning>
+Configure the naming system in **HR Settings** before creating your first employee. Changing the naming method later does not rename existing records.
+</Warning>
+
+## How to create a new employee
+
+<Steps>
+  <Step title="Open the Employee list">
+    Navigate to **HR > Employee > Employee** and click **New**.
+  </Step>
+  <Step title="Fill in the required fields">
+    At minimum, provide:
+    - Employee name
+    - Company
+    - Date of joining
+    - Department
+    - Designation
+    - Status (defaults to `Active`)
+  </Step>
+  <Step title="Set the reporting manager">
+    In the **Employment Details** section, set **Reports To** to the employee's direct manager. This field controls the approval hierarchy for certain workflows.
+  </Step>
+  <Step title="Set approvers">
+    Assign a **Leave Approver** and an **Expense Approver**. When you save the record, Frappe HR automatically grants the `Leave Approver` and `Expense Approver` roles to those users respectively.
+  </Step>
+  <Step title="Add personal details">
+    Fill in date of birth, gender, personal email, and emergency contact information in the **Personal Details** section.
+  </Step>
+  <Step title="Save the record">
+    Click **Save**. The employee ID is assigned based on the naming method configured in HR Settings.
+  </Step>
+</Steps>
+
+## Setting the reporting manager and approvers
+
+The **Reports To** field creates the management hierarchy used by reports and certain notification rules. It is a link to another Employee record.
+
+The **Leave Approver** and **Expense Approver** fields link to system **User** accounts (not Employee records). When either field is set and the record is saved, the corresponding approver role is automatically added to that user:
+
+```python
+# From hrms/overrides/employee_master.py
+def update_approver_role(doc, method=None):
+    if doc.leave_approver:
+        user = frappe.get_doc("User", doc.leave_approver)
+        user.add_roles("Leave Approver")
+
+    if doc.expense_approver:
+        user = frappe.get_doc("User", doc.expense_approver)
+        user.add_roles("Expense Approver")
+```
+
+<Note>
+If you later change the approver on the Employee record, the old approver retains the role only if they are still set as an approver on at least one other Employee record.
+</Note>
+
+## Linking an employee to a user account
+
+Set the **User ID** field to connect the Employee record to a Frappe user. This link is required for:
+
+- The employee to submit leave applications and expense claims
+- The mobile PWA to identify the logged-in user's employee record
+- Attendance auto-marking based on shift schedules
+
+## Retirement date calculation
+
+When you enter a **Date of Birth**, Frappe HR calculates the retirement date automatically using the **Retirement Age** value from HR Settings (default: 60 years). The calculated date is displayed in the **Personal Details** section as a read-only field.
+
+## Frequently asked questions
+
+<Accordion title="Can one user account be linked to multiple employee records?">
+No. A user account can only be linked to one active Employee record at a time. If an employee is transferred to a new company and a new Employee ID is created, the user ID is moved to the new record automatically during the transfer.
+</Accordion>
+
+<Accordion title="What happens when an employee record is created from onboarding?">
+When you click **Make Employee** on a submitted Employee Onboarding document, Frappe HR maps the onboarding fields (name, department, designation, grade) to a new Employee record and sets the personal email from the linked Job Applicant. The status is automatically set to `Active`.
+</Accordion>
+
+<Accordion title="Can I import employees in bulk?">
+Yes. Use **HR > Data Import** or the standard Frappe **Data Import** tool. Download the import template from the Employee list, fill in the required columns, and upload the file.
+</Accordion>

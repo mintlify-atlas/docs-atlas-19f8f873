@@ -1,122 +1,160 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Frappe HR",
+  "theme": "linden",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#141414",
+    "light": "#7c7c7c",
+    "dark": "#c8c8c8"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "https://media.brand.dev/493025a2-5551-4dac-9aa1-f4e0d271f1b0.jpg",
+  "logo": {
+    "light": "https://media.brand.dev/98adecf7-afcf-4956-9823-a5a3eca08c3f.svg",
+    "dark": "https://media.brand.dev/98adecf7-afcf-4956-9823-a5a3eca08c3f.svg"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/frappe/hrms"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/frappe/hrms"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "getting-started/installation",
+              "getting-started/docker-setup",
+              "getting-started/first-steps"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Employee Management",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "employee-management/overview",
+              "employee-management/employee-profile",
+              "employee-management/onboarding",
+              "employee-management/transfers-promotions",
+              "employee-management/separation-exit"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Leave & Attendance",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "leave-attendance/overview",
+              "leave-attendance/leave-types",
+              "leave-attendance/leave-policy",
+              "leave-attendance/leave-application",
+              "leave-attendance/attendance-marking",
+              "leave-attendance/shift-management",
+              "leave-attendance/holiday-list"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Payroll",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "payroll/overview",
+              "payroll/salary-structure",
+              "payroll/salary-slip",
+              "payroll/payroll-entry",
+              "payroll/additional-salary",
+              "payroll/taxation",
+              "payroll/gratuity"
+            ]
+          },
+          {
+            "group": "Expense Claims",
+            "pages": [
+              "expense-claims/overview",
+              "expense-claims/expense-claim",
+              "expense-claims/employee-advance",
+              "expense-claims/travel-request"
+            ]
+          },
+          {
+            "group": "Performance Management",
+            "pages": [
+              "performance/overview",
+              "performance/appraisal-cycle",
+              "performance/goals-kra",
+              "performance/feedback",
+              "performance/appraisal-template"
+            ]
+          },
+          {
+            "group": "Recruitment",
+            "pages": [
+              "recruitment/overview",
+              "recruitment/job-opening",
+              "recruitment/job-applicant",
+              "recruitment/interview",
+              "recruitment/job-offer"
+            ]
+          },
+          {
+            "group": "Mobile App",
+            "pages": [
+              "mobile-app/overview",
+              "mobile-app/leave-management",
+              "mobile-app/attendance-checkin",
+              "mobile-app/expense-claims"
+            ]
+          },
+          {
+            "group": "Regional Settings",
+            "pages": [
+              "regional/overview",
+              "regional/india",
+              "regional/uae"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "Guides",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Setup & Configuration",
             "pages": [
-              "api-reference/introduction"
+              "guides/hr-settings",
+              "guides/payroll-settings",
+              "guides/roles-permissions",
+              "guides/notifications"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Reports",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "guides/reports/hr-reports",
+              "guides/reports/payroll-reports",
+              "guides/reports/attendance-reports"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "guides/integrations/erpnext",
+              "guides/integrations/frappe-framework"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "guides/contributing/development-setup",
+              "guides/contributing/code-guidelines"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

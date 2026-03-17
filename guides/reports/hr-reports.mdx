@@ -1,0 +1,149 @@
+---
+title: "HR reports"
+description: "Overview of all built-in HR reports in Frappe HR covering employees, leave, attendance, appraisals, recruitment, and expenses."
+---
+
+Frappe HR includes a comprehensive set of built-in reports covering the full employee lifecycle. All reports are accessible from the HR module under **Reports**.
+
+## Employee reports
+
+### Employee Analytics
+
+Displays aggregate employee data such as headcount over time, new hires, and separations. Use this report to monitor workforce growth and attrition trends.
+
+**Filters:** Company, Date Range, Department, Branch, Designation
+
+### Employee Information
+
+A tabular report listing all active employees with key profile fields including name, designation, department, date of joining, and contact details. Useful for audits and bulk data exports.
+
+**Filters:** Company, Department, Branch, Designation, Status
+
+### Employee Birthday
+
+Lists employees with upcoming birthdays within a selected date range. Use this to plan recognition activities or verify that birthday reminders are firing correctly.
+
+**Filters:** Month, Company
+
+### Employee Exits
+
+Shows employees who have been separated within a given period, including their last working day, reason for leaving, and exit interview status. Use this to track attrition and monitor offboarding completion.
+
+**Filters:** Company, Date Range, Department
+
+### Employee Advance Summary
+
+Shows outstanding employee advances — the amount disbursed, claimed against expense claims, and the remaining balance. Use this to identify employees with unclaimed advances.
+
+**Filters:** Company, Employee, Status
+
+## Leave reports
+
+### Employee Leave Balance
+
+Shows the current leave balance for each employee broken down by leave type. Displays leave allocated, taken, and remaining. Essential for leave audits at the end of a leave period.
+
+**Filters:** Date, Company, Employee, Leave Type, Department
+
+### Employee Leave Balance Summary
+
+A pivot-style summary version of the leave balance report. Displays all leave types as columns so you can compare balances across the organization at a glance.
+
+**Filters:** Date, Company, Department, Employee
+
+### Leave Ledger
+
+Shows a chronological log of all leave transactions for an employee — allocations, applications, encashments, and expirations. Use this to trace the history of a specific employee's leave balance.
+
+**Filters:** Employee, Leave Type, From Date, To Date, Transaction Type
+
+## Attendance reports
+
+### Monthly Attendance Sheet
+
+A grid report showing daily attendance status for all employees in a given month. Each cell shows the attendance status for that day: Present, Absent, Half Day, On Leave, Holiday, or Weekly Off.
+
+**Filters:** Month, Year, Company, Department, Employee
+
+<Tip>
+The Monthly Attendance Sheet can be exported to Excel for payroll processing or HR audits. Use the **Export** button at the top of the report.
+</Tip>
+
+### Shift Attendance Report
+
+Shows attendance records grouped by shift. Useful for organizations running multiple shifts to identify attendance patterns and gaps per shift.
+
+**Filters:** Shift Type, From Date, To Date, Company, Department
+
+### Employees Working on a Holiday
+
+Lists employees who have attendance records marked on days that are holidays in their assigned Holiday List. Use this to process compensation or overtime for holiday work.
+
+**Filters:** Date, Company, Holiday List
+
+### Employee Hours Utilization Based on Timesheet
+
+Compares billed vs. unbilled hours from timesheets against each employee's standard working hours. Useful for professional services organizations tracking utilization rates.
+
+**Filters:** From Date, To Date, Company, Project, Employee
+
+## Appraisal reports
+
+### Appraisal Overview
+
+Provides a summary of appraisal status across the organization for a given appraisal cycle. Shows which employees have completed self-appraisals, received ratings, and had final appraisals approved.
+
+**Filters:** Appraisal Cycle, Company, Department
+
+## Recruitment reports
+
+### Recruitment Analytics
+
+Tracks the recruitment funnel from job openings through applicants to offers. Shows metrics like time-to-hire and applicant conversion rates per job opening and department.
+
+**Filters:** Company, From Date, To Date, Department, Designation
+
+## Expense reports
+
+### Unpaid Expense Claim
+
+Lists submitted and approved expense claims that have not yet been paid. Use this to identify overdue reimbursements and process payments.
+
+**Filters:** Company, Employee, Department, From Date, To Date
+
+### Vehicle Expenses
+
+Summarizes vehicle-related expense claims by employee and vehicle. Use this for fleet cost tracking and reimbursement audits.
+
+**Filters:** Company, From Date, To Date, Employee
+
+### Project Profitability
+
+Combines timesheet hours and expense data against project revenue to calculate per-project profitability. Links HR costs to ERPNext project accounting.
+
+**Filters:** Company, Project, From Date, To Date
+
+### Daily Work Summary Replies
+
+Shows replies received from employees in response to Daily Work Summary emails. Use this to review team activity logs without opening individual summary records.
+
+**Filters:** Daily Work Summary Group, From Date, To Date
+
+## Exporting reports
+
+All Frappe HR reports can be exported to Excel (`.xlsx`) or CSV format.
+
+<Steps>
+  <Step title="Run the report">
+    Apply your desired filters and click **Refresh** to generate the report.
+  </Step>
+  <Step title="Click Export">
+    Click the **Export** button (download icon) in the top-right toolbar of the report.
+  </Step>
+  <Step title="Choose format">
+    Select **Excel** or **CSV** from the export options.
+  </Step>
+  <Step title="Download">
+    The file downloads to your browser's default download location.
+  </Step>
+</Steps>

@@ -1,0 +1,120 @@
+---
+title: "Shift management"
+description: "Define shift types, assign employees to shifts, and configure auto-attendance rules based on check-in logs."
+---
+
+Frappe HR's shift management system lets you model any work schedule — fixed hours, rotating shifts, or flexible arrangements — and automatically derive attendance from employee check-in logs.
+
+## Shift type
+
+A Shift Type defines the timing, grace periods, and auto-attendance rules for a class of shift. All employees assigned to the same shift share these rules.
+
+Go to **HR > Shift Type > New**.
+
+### Timing fields
+
+| Field | Description |
+|---|---|
+| **Start Time** | When the shift begins. |
+| **End Time** | When the shift ends. Night shifts that cross midnight are supported. |
+| **Begin Check-in Before Shift Start Time (mins)** | How early a check-in is still attributed to this shift. |
+| **Allow Check-out After Shift End Time (mins)** | How late a check-out is still attributed to this shift. |
+| **Color** | Visual color for the shift in calendar and schedule views. |
+| **Holiday List** | Overrides the employee's holiday list for this shift specifically. |
+
+### Auto-attendance settings
+
+| Field | Description |
+|---|---|
+| **Enable Auto Attendance** | Turns on automatic attendance processing from check-in logs. |
+| **Process Attendance After** | Attendance is only created for dates on or after this date. |
+| **Last Sync of Checkin** | Auto-attendance processes logs with `shift_actual_end` before this datetime. Update this field regularly (or enable **Auto Update Last Sync**). |
+| **Auto Update Last Sync** | Automatically advances the last sync time when auto-attendance runs. |
+| **Mark Auto Attendance on Holidays** | When enabled, attendance is also marked on holiday dates. |
+
+### Working hours calculation
+
+| Field | Options |
+|---|---|
+| **Determine Check-in and Check-out** | `Alternating entries as IN and OUT during the same shift` — each pair of consecutive logs counts as in/out. `Strictly based on Log Type in Employee Checkin` — only logs with explicit `IN`/`OUT` types are used. |
+| **Working Hours Calculation Based On** | `First Check-in and Last Check-out` — total time from first to last log. `Every Valid Check-in and Check-out` — sum of each matched in/out pair. |
+| **Working Hours Threshold for Half Day** | Hours below this mark attendance as Half Day. |
+| **Working Hours Threshold for Absent** | Hours below this (and below the half-day threshold) mark attendance as Absent. |
+
+### Late entry and early exit
+
+| Field | Description |
+|---|---|
+| **Enable Late Entry Marking** | Flags attendance as `late_entry` when check-in exceeds the grace period. |
+| **Late Entry Grace Period (mins)** | Minutes after shift start before a check-in is considered late. |
+| **Enable Early Exit Marking** | Flags attendance as `early_exit` when check-out is before the end grace period. |
+| **Early Exit Grace Period (mins)** | Minutes before shift end when check-out is considered early. |
+
+### Overtime
+
+| Field | Description |
+|---|---|
+| **Allow Overtime** | Enables overtime tracking for this shift. |
+| **Overtime Type** | Links to an Overtime Type record that defines payout rules. |
+
+<Warning>
+Do not change **Start Time** on a Shift Type that has unprocessed check-in logs. The system raises an error to prevent miscalculating attendance for existing logs.
+</Warning>
+
+## Shift assignment
+
+A Shift Assignment links one employee to one Shift Type for a date range. It is a submittable document.
+
+Go to **HR > Shift Assignment > New**.
+
+| Field | Description |
+|---|---|
+| **Employee** | The employee being assigned. |
+| **Shift Type** | The shift they are assigned to. |
+| **Start Date** | When the assignment begins. |
+| **End Date** | When the assignment ends (optional — leave blank for open-ended assignments). |
+| **Status** | Active or Inactive. Can be changed after submission. |
+| **Shift Location** | Optional location record for geolocation-based check-in validation. |
+| **Overtime Type** | Defaults from the Shift Type but can be overridden per assignment. |
+
+<Info>
+Employees can view their shift assignments in the HR module and the mobile PWA. The shift is also shown on the Attendance record created by auto-attendance.
+</Info>
+
+## Shift schedule and shift schedule assignment
+
+Shift Schedules are recurring patterns (e.g. a rotating 3-shift cycle). A **Shift Schedule** defines the repeating sequence and a **Shift Schedule Assignment** applies it to an employee.
+
+When a Shift Schedule Assignment is submitted, Frappe HR automatically generates individual Shift Assignment records for each occurrence in the pattern, so the auto-attendance processor can identify which shift a check-in belongs to.
+
+## Shift request
+
+Employees can request a shift change via the self-service **Shift Request** form:
+
+1. Go to **HR > Shift Request > New** (or use the mobile PWA).
+2. Select the desired **Shift Type**, **From Date**, and **To Date**.
+3. Submit — the request goes to an approver (set on the employee record or department).
+4. On approval, a Shift Assignment is created automatically and linked to the request via the `shift_request` field.
+
+## How auto-attendance determines status
+
+When `process_auto_attendance` runs on a Shift Type, it applies this logic for each group of logs belonging to one employee and one shift start:
+
+1. Calculate total working hours using the shift's check-in/out method and hours calculation setting.
+2. If `working_hours >= working_hours_threshold_for_absent` but `< working_hours_threshold_for_half_day`: **Half Day**.
+3. If `working_hours >= working_hours_threshold_for_half_day`: **Present**.
+4. If `working_hours < working_hours_threshold_for_absent`: **Absent**.
+5. For employees with zero logs during the sync window, **Absent** is marked for all unprocessed dates.
+
+For half-holiday dates, both thresholds are halved before comparison:
+
+```python
+# hrms/hr/doctype/shift_type/shift_type.py
+if self.is_half_holiday(employee, attendance_date):
+    working_hours_threshold_for_half_day = flt(self.working_hours_threshold_for_half_day) / 2
+    working_hours_threshold_for_absent = flt(self.working_hours_threshold_for_absent) / 2
+```
+
+<Tip>
+Trigger auto-attendance manually for a shift type using the **Process Auto Attendance** button on the Shift Type form. For large datasets (>1000 logs), processing is queued as a background job.
+</Tip>

@@ -1,0 +1,117 @@
+---
+title: "Salary slips"
+description: "Generate, review, and print salary slips for individual employees or in bulk through a payroll entry."
+---
+
+A **Salary Slip** is the computed pay statement for a single employee for a single payroll period. It contains the gross earnings, deductions, leave deductions, loan repayments, and net pay.
+
+## Generating salary slips
+
+Slips are created in two ways:
+
+**Individually** — Go to **Payroll → Salary Slip → New**, select an employee and a period. The slip is computed immediately when you save.
+
+**In bulk via Payroll Entry** — A single Payroll Entry creates slips for all employees in scope. This is the recommended path for regular payroll runs. See [Payroll entry](/payroll/payroll-entry) for the full workflow.
+
+## Structure of a salary slip
+
+### Header
+
+The slip header contains:
+
+- Employee name, ID, designation, department, and branch
+- Bank account number and bank name
+- Payroll period (start date and end date)
+- Working days, payment days, and leave without pay (LWP) days
+- Salary structure name
+
+### Earnings table
+
+Each row in the **Earnings** table corresponds to a Salary Component of type `Earning`. The **Default Amount** column shows the formula-computed value. If the component depends on payment days, the **Amount** column shows the prorated value after accounting for absent or LWP days.
+
+### Deductions table
+
+Each row in the **Deductions** table is a Salary Component of type `Deduction`. Income tax components (those with **Variable Based on Taxable Salary** enabled) are computed automatically based on the configured Income Tax Slab and the projected annual income.
+
+### Leave deductions
+
+The **Leaves** section lists leave applications that caused a pay deduction in the period. Leave without pay (LWP) days are recorded here and feed into payment-days-based component calculations.
+
+### Loan repayments
+
+If the employee has an active loan with repayments scheduled, the **Loans** section shows the principal and interest portions of each repayment. Submitting the salary slip automatically creates a loan repayment entry and updates the outstanding loan balance.
+
+<Info>
+Loan repayment integration requires the **Lending** app to be installed on the same Frappe site.
+</Info>
+
+## Leave deductions and payment days
+
+Frappe HR calculates payment days based on the **Payroll Settings** configuration:
+
+- **Payroll Based On** — `Attendance` or `Leave`. Determines whether absent days are counted from attendance records or leave applications.
+- **Include Holidays in Total Working Days** — Whether public holidays count as working days for proration purposes.
+- **Consider Unmarked Attendance As** — How days with no attendance record are treated (`Present`, `Absent`, or `Half Day`).
+
+Components with **Depends on Payment Days** enabled are prorated as:
+
+```python
+component_amount = formula_amount * (payment_days / total_working_days)
+```
+
+## Viewing income tax breakup
+
+To see how income tax was calculated for a slip, click **View Income Tax Breakup** from the salary slip. This shows:
+
+- Projected annual gross income
+- Standard deduction and exemptions applied
+- Investment declarations (from Employee Tax Exemption Declaration)
+- Taxable income after all deductions
+- Tax slab-wise breakdown of the computed tax
+- Marginal relief (where applicable)
+- Monthly tax amount derived from the annual figure
+
+## Year-to-date and accumulated fields
+
+Salary slips track cumulative values across the payroll period:
+
+| Field | Description |
+|---|---|
+| **Gross Year to Date** | Sum of gross pay for all submitted slips in the current payroll period. |
+| **Base Year to Date** | Year-to-date figure in company base currency. |
+| **Month to Date** | Gross pay for the current slip. |
+| **Annual Taxable Amount** | Projected annual taxable income used for tax calculations. |
+| **Current Month Income Tax** | The tax deducted in this slip. |
+
+## Printing salary slips
+
+To print a single slip, open it and click **Print**. The default print format uses the company letter head configured on the salary structure.
+
+To email a slip to the employee, click **Send Email** from the slip form.
+
+For bulk printing or emailing from a Payroll Entry, use the **Print Salary Slips** button after slips have been submitted.
+
+## Salary withholding
+
+**Salary Withholding** lets you suspend pay for an employee on notice period or under investigation for a specified number of payroll cycles without deleting their salary slip.
+
+To create a withholding:
+
+<Steps>
+  <Step title="Create a Salary Withholding record">
+    Go to **Payroll → Salary Withholding → New**. Select the employee, the payroll frequency, and the number of withholding cycles.
+  </Step>
+  <Step title="Set the start date">
+    Set **From Date** to the first payroll cycle to withhold. The system auto-calculates the **To Date** based on the number of cycles and the frequency.
+  </Step>
+  <Step title="Submit">
+    Submit the record. Its status changes to **Withheld**. When the payroll entry runs for the affected period, salary slips for this employee are created but not included in the payment journal entry.
+  </Step>
+  <Step title="Release the withholding">
+    When you are ready to release the withheld pay, open the Salary Withholding record and click **Release**. The status changes to **Released** and the withheld amounts can be included in the next payroll run.
+  </Step>
+</Steps>
+
+<Note>
+Withholding records track individual payroll cycles in the **Cycles** child table, so you can see which specific pay periods were withheld.
+</Note>

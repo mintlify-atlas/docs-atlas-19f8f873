@@ -1,0 +1,93 @@
+---
+title: "Holiday lists"
+description: "Define weekly offs and public holidays, then assign lists to employees or departments to control leave calculations and attendance."
+---
+
+A Holiday List is a named set of dates on which employees do not work. Frappe HR uses it in three places:
+
+- **Leave applications** — holidays within a leave block are excluded from the leave day count (unless the leave type has **Include Holidays Within Leaves as Leaves** enabled).
+- **Attendance** — the auto-attendance processor skips holiday dates when marking absent employees.
+- **Payroll** — the Payment Days calculation in a Salary Slip uses the holiday list to determine actual working days.
+
+Go to **HR > Holiday List > New** to create one.
+
+## Creating a holiday list
+
+<Steps>
+  <Step title="Name the list">
+    Give the list a descriptive name such as `India Holidays 2025` or `Head Office 2025`. The name is shown in employee records and leave forms.
+  </Step>
+  <Step title="Set the date range">
+    Enter **From Date** and **To Date**. The range is typically a full calendar year.
+  </Step>
+  <Step title="Add weekly offs">
+    Click **Add Weekly Offs** and select the day(s) of the week (e.g. Saturday, Sunday). This generates one holiday entry per occurrence of that weekday in the date range.
+  </Step>
+  <Step title="Add public holidays">
+    In the **Holidays** table, add individual rows for public holidays:
+    - **Date** — the holiday date.
+    - **Description** — a label such as `Republic Day` or `Christmas`.
+    - **Weekly Off** — check this if the entry represents a regular weekly day off rather than a named holiday.
+  </Step>
+  <Step title="Import regional holidays (optional)">
+    Click **Import Holidays** to load a country's standard public holidays from the built-in regional calendar. Select the country and year, then review and confirm the imported dates.
+  </Step>
+</Steps>
+
+## Weekly offs vs. public holidays
+
+| Type | Weekly Off checked | Description |
+|---|---|---|
+| Weekly off | Yes | Recurring day off (Saturday, Sunday). Generated in bulk by **Add Weekly Offs**. |
+| Public holiday | No | Named one-off holiday (Independence Day, Christmas, etc.). |
+
+Both types are stored in the same **Holidays** table and behave identically in all calculations. The **Weekly Off** flag is informational.
+
+## Assigning a holiday list
+
+Holiday lists can be assigned at multiple levels. The system resolves them from the most specific to the most general:
+
+1. **Employee record** — set **Holiday List** directly on the employee. This takes priority over all other assignments.
+2. **Department** — set **Holiday List** on the Department master. All employees in the department inherit it unless they have an individual override.
+3. **Company** — set a **Default Holiday List** on the Company record as the final fallback.
+
+<Info>
+Shift Types also have a **Holiday List** field. When set, it overrides the employee-level and company-level lists for attendance purposes within that shift.
+</Info>
+
+## How holidays affect leave balance calculations
+
+When an employee applies for leave, the system calls `get_holiday_dates_for_employee` to fetch all holidays in the applied date range. These dates are excluded from the `total_leave_days` count.
+
+**Example:** An employee applies for leave from Monday to Friday (5 calendar days). Wednesday is a public holiday. With the default setting, `total_leave_days = 4` and only 4 days are deducted from the balance.
+
+To change this behavior for a specific leave type — for example, to count public holidays as leave days for sick leave — enable **Include Holidays Within Leaves as Leaves** on that Leave Type. With this setting, `total_leave_days = 5`.
+
+## How holidays affect attendance
+
+When auto-attendance runs, it skips holiday dates when marking absent employees. An employee with no check-in log on a holiday is not marked Absent.
+
+If a Shift Type has **Mark Auto Attendance on Holidays** enabled, this behavior is reversed and attendance is marked even on holiday dates.
+
+<Warning>
+If you change the holiday list assigned to an employee mid-period, already-submitted leave applications and attendance records are not retroactively updated. Cancel and resubmit affected documents if needed.
+</Warning>
+
+## Replacing an expiring holiday list
+
+At the start of each year, create a new holiday list for the new year before the old one's **To Date** passes:
+
+<Steps>
+  <Step title="Duplicate last year's list">
+    Open the previous year's Holiday List and use **Menu > Duplicate**. Update the name and date range.
+  </Step>
+  <Step title="Update weekly offs">
+    Delete the old weekly off rows and click **Add Weekly Offs** again to regenerate them for the new year's dates.
+  </Step>
+  <Step title="Update public holidays">
+    Adjust individual holiday dates as needed or use **Import Holidays** to reload them.
+  </Step>
+  <Step title="Reassign to employees">
+    Update the **Holiday List** field on the Company, Department, or individual Employee records to point to the new list.
+  </Step>
+</Steps>

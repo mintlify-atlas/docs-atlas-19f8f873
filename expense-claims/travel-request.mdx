@@ -1,0 +1,120 @@
+---
+title: "Travel requests"
+description: "Raise and approve travel requests with itinerary, costing, and funding details before a trip begins."
+---
+
+A Travel Request allows an employee to seek approval for business travel before incurring any expenses. It records the itinerary, purpose, estimated costs, and funding requirements. Approved travel requests can be linked to Expense Claims after the trip.
+
+## Creating a travel request
+
+<Steps>
+  <Step title="Open a new Travel Request">
+    Go to **HR > Expense Claims > Travel Request > New**.
+  </Step>
+  <Step title="Fill in the travel details">
+    | Field | Description |
+    |---|---|
+    | **Employee** | The employee who will travel. |
+    | **Travel Type** | **Domestic** or **International**. |
+    | **Purpose of Travel** | Link to a Purpose of Travel master (e.g. Conference, Client Visit, Training). |
+    | **Description** | Additional context about the trip. |
+    | **Company** | The company sponsoring or authorising the travel. |
+    | **Cost Center** | Cost center to which the travel costs will be allocated. |
+  </Step>
+  <Step title="Add the itinerary">
+    In the **Itinerary** table, add one row per leg of the journey:
+
+    | Column | Description |
+    |---|---|
+    | **Departure Date** | Date of departure for this leg. |
+    | **Arrival Date** | Date of arrival for this leg. |
+    | **From** | Origin city or location. |
+    | **To** | Destination city or location. |
+    | **Mode of Transport** | How the employee will travel (flight, train, car, etc.). |
+    | **Lodging Required** | Whether accommodation is needed at the destination. |
+    | **Preferred Mode of Accommodation** | Hotel, guest house, etc. |
+  </Step>
+  <Step title="Add costing items">
+    In the **Costings** table, list the estimated costs for the trip:
+
+    | Column | Description |
+    |---|---|
+    | **Expense Type** | Category of cost (e.g. Airfare, Hotel, Meals). |
+    | **Amount** | Estimated cost in the travel currency. |
+    | **Currency** | Currency of the estimated amount. |
+    | **Funded Amount** | Amount covered by a sponsor or the company. |
+  </Step>
+  <Step title="Set funding information">
+    | Field | Description |
+    |---|---|
+    | **Travel Funding** | One of: **Require Full Funding**, **Fully Sponsored**, or **Partially Sponsored, Require Partial Funding**. |
+    | **Details of Sponsor** | Name or details of the external sponsor, if applicable. |
+  </Step>
+  <Step title="Add travel document details (international travel)">
+    For international travel, complete the traveller identification fields:
+
+    | Field | Description |
+    |---|---|
+    | **Passport Number** | Employee's passport number. |
+    | **Date of Birth** | Employee's date of birth for travel documentation. |
+    | **Personal ID Type / Number** | National ID or other identity document. |
+    | **Cell Number** | Contact number while travelling. |
+    | **Preferred Email** | Email address for travel-related communications. |
+    | **Travel Proof** | Attach a visa, ticket, or other travel document. |
+  </Step>
+  <Step title="Submit the travel request">
+    Save and submit the Travel Request. The system validates that the employee is active before allowing submission.
+  </Step>
+</Steps>
+
+## Approval and booking
+
+Frappe HR does not include a built-in multi-step approval workflow for Travel Requests by default, but you can configure one using **Frappe Workflow**:
+
+1. Go to **Setup > Workflow > New Workflow** and select **Travel Request** as the document type.
+2. Define states (e.g. Draft → Pending Approval → Approved → Rejected) and the roles allowed to transition between them.
+3. Once approved, the HR or travel admin can use the request as a reference to book tickets and accommodation.
+
+<Info>
+Even without a formal workflow, Travel Requests serve as an audit trail. Managers can review submitted requests in the Travel Request list and inform employees of approval out-of-band.
+</Info>
+
+## Organiser details
+
+If the travel is for an external event (conference, seminar), record the organiser's information:
+
+| Field | Description |
+|---|---|
+| **Name of Organizer** | Name of the event organiser or hosting institution. |
+| **Address of Organizer** | Address of the event venue or organiser. |
+| **Other Details** | Any additional information about the event. |
+
+## Linking a travel request to an expense claim
+
+After the employee returns and incurs actual expenses, they can reference the Travel Request when filing an Expense Claim:
+
+<Steps>
+  <Step title="Open a new Expense Claim">
+    Create a new Expense Claim for the employee.
+  </Step>
+  <Step title="Reference the travel request">
+    In the **More Info** tab, link the relevant Travel Request in the **Travel Request** field (if your form has been customised to show this). Alternatively, note the Travel Request number in the **Remarks** field for traceability.
+  </Step>
+  <Step title="Add actual expense lines">
+    Fill in the actual costs incurred. These may differ from the estimated costings on the Travel Request.
+  </Step>
+  <Step title="Attach receipts and submit">
+    Attach receipts and submit the Expense Claim for approval as normal.
+  </Step>
+</Steps>
+
+<Tip>
+Compare the **Costings** table on the Travel Request with the final Expense Claim lines to identify budget variances. Use the **Cost Center** field on both documents to group actuals vs. estimates in your accounting reports.
+</Tip>
+
+## Travel type considerations
+
+| Travel Type | Key differences |
+|---|---|
+| **Domestic** | Simpler documentation; passport and visa fields are not required. |
+| **International** | Passport number, date of birth, and personal ID fields become relevant for visa and travel insurance purposes. Currency of costs may differ from the company currency, requiring exchange rate handling in the linked Expense Claim. |

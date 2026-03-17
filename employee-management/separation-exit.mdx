@@ -1,0 +1,201 @@
+---
+title: "Separation and exit"
+description: "Coordinate employee offboarding with structured activity checklists, exit interviews, and a Full & Final Statement that settles all outstanding dues."
+---
+
+When an employee leaves, Frappe HR provides three coordinated doctypes to manage the process: **Employee Separation** for offboarding tasks, **Exit Interview** for the exit conversation, and **Full and Final Statement** for financial settlement.
+
+## Employee Separation
+
+**Employee Separation** works the same way as Employee Onboarding — it creates a Project with Tasks for each activity in the checklist, assigned to specific users or roles. When all tasks are done, HR marks the employee as relieved.
+
+### Separation fields
+
+| Field | Description |
+|---|---|
+| Employee | The departing employee |
+| Company | The employee's company |
+| Department / Designation / Grade | Fetched from the employee record |
+| Resignation Letter Date | Date the resignation was received |
+| Boarding Begins On | Date from which task start dates are calculated |
+| Employee Separation Template | Reusable activity checklist |
+| Activities | Child table of **Employee Boarding Activity** rows |
+| Exit Interview | Rich-text field to record notes from the exit discussion |
+| Boarding Status | `Pending` → `In Process` → `Completed` |
+| Project | Auto-created Frappe Project (read-only) |
+
+### Separation templates
+
+An **Employee Separation Template** is structurally identical to an onboarding template — it has a title, optional scope filters (company, department, designation, grade), and an activities table. Create templates for different roles or departments to avoid re-entering the same checklist for every departure.
+
+To create a template, navigate to **HR > Employee Lifecycle > Employee Separation Template** and click **New**.
+
+### Offboarding workflow
+
+<Steps>
+  <Step title="Create the Employee Separation document">
+    Navigate to **HR > Employee Lifecycle > Employee Separation** and click **New**. Select the **Employee**. The department, designation, and grade are fetched automatically.
+  </Step>
+  <Step title="Enter the resignation letter date">
+    Set **Resignation Letter Date** to the date HR received the resignation. This is used as the expected start date for the linked Project.
+  </Step>
+  <Step title="Select a separation template">
+    Choose an **Employee Separation Template**. The activities table is populated from the template. Adjust individual activity assignments as needed.
+  </Step>
+  <Step title="Set the boarding start date">
+    Enter **Boarding Begins On** — the date from which individual task deadlines are calculated using each activity's **Begin On** value.
+  </Step>
+  <Step title="Submit the separation document">
+    Click **Submit**. A Frappe **Project** is created and a **Task** is auto-created for each activity, assigned to the specified user or role.
+  </Step>
+  <Step title="Track activity completion">
+    Assignees complete their tasks. The **Boarding Status** updates from `Pending` to `In Process` to `Completed` as the project completion percentage changes.
+  </Step>
+  <Step title="Mark the employee as relieved">
+    Once all activities are complete, update the employee's **Status** to `Relieved` and set the **Relieving Date** on the Employee record.
+  </Step>
+</Steps>
+
+<Info>
+Cancelling an Employee Separation document deletes the linked Project and all Tasks. If you need to restart the offboarding process, amend the cancelled document.
+</Info>
+
+## Exit Interview
+
+The **Exit Interview** doctype captures the formal exit discussion between the departing employee and HR or their manager.
+
+### Exit Interview fields
+
+| Field | Description |
+|---|---|
+| Employee | The departing employee |
+| Date | Date the interview took place |
+| Interviewers | Multi-select list of users conducting the interview |
+| Status | `Pending` → `Scheduled` → `Completed` → `Cancelled` |
+| Employee Status | Outcome: `Employee Retained` or `Exit Confirmed` |
+| Interview Summary | Rich-text notes from the discussion |
+| Questionnaire Email Sent | Checkbox indicating the online questionnaire was sent |
+
+### Exit Interview workflow
+
+<Steps>
+  <Step title="Set the relieving date on the employee record">
+    The Exit Interview requires a **Relieving Date** on the Employee record before you can save it. Set this in the employee's **Exit** section.
+  </Step>
+  <Step title="Create the Exit Interview">
+    Navigate to **HR > Employee Lifecycle > Exit Interview** and click **New**. Select the employee. Their email is fetched automatically from the employee record.
+  </Step>
+  <Step title="Schedule the interview">
+    Set the **Date**, add **Interviewers**, and change the status to `Scheduled`.
+  </Step>
+  <Step title="Send the exit questionnaire">
+    Optionally click **Send Exit Questionnaire** to email the employee a web form link. This requires the **Exit Questionnaire Web Form** and **Notification Template** to be configured in **HR Settings**.
+  </Step>
+  <Step title="Record the outcome">
+    After the interview, enter the **Interview Summary** and set **Employee Status** to `Employee Retained` or `Exit Confirmed`. Change the status to `Completed`.
+  </Step>
+  <Step title="Submit the Exit Interview">
+    Click **Submit**. The interview date is written back to the `held_on` field on the Employee record. Only documents in `Completed` status can be submitted.
+  </Step>
+</Steps>
+
+<Warning>
+Only one Exit Interview can exist per employee (excluding cancelled documents). Attempting to create a duplicate raises a `DuplicateEntryError`.
+</Warning>
+
+## Full and Final Statement
+
+The **Full and Final Statement** (FnF) is the financial settlement document that aggregates everything owed to or owed by the departing employee.
+
+### What the FnF covers
+
+**Payables** (amounts owed to the employee):
+
+- Withheld salary slips
+- Gratuity
+- Expense Claims
+- Bonus (via Additional Salary)
+- Leave Encashment
+
+**Receivables** (amounts owed by the employee):
+
+- Employee Advances (unrecovered)
+- Loans (outstanding principal, if the `lending` app is installed)
+
+**Assets**:
+
+- Company-owned assets allocated to the employee (via Asset Movements)
+- Each asset row has an **Action** field: `Return` or `Recover Cost`
+
+### Full and Final Statement workflow
+
+<Steps>
+  <Step title="Set the relieving date">
+    The FnF requires a **Relieving Date** on the Employee record. Set it before creating the statement.
+  </Step>
+  <Step title="Create the Full and Final Statement">
+    Navigate to **HR > Employee Lifecycle > Full and Final Statement** and click **New**. Select the **Employee**.
+    
+    On creation, the system automatically fetches:
+    - Withheld salary slips and adds them as payable rows
+    - Outstanding payable components (Gratuity, Expense Claims, Bonus, Leave Encashment)
+    - Outstanding receivable components (Employee Advances, Loans)
+    - Assets currently held by the employee (based on Asset Movements)
+  </Step>
+  <Step title="Review and fill in amounts">
+    For each payable and receivable row, enter the **Amount** and link to the **Reference Document**. Set the status of each row to `Settled` once the amount is confirmed.
+  </Step>
+  <Step title="Handle assets">
+    For each asset in the **Assets Allocated** table:
+    - Set **Action** to `Return` if the employee will return the asset.
+    - Set **Action** to `Recover Cost` if the asset cost will be deducted from the settlement.
+    - Mark returned assets as returned before submission.
+  </Step>
+  <Step title="Submit the statement">
+    All payable and receivable rows must have status `Settled` before you can submit. All assets with action `Return` must be marked as returned. Click **Submit**.
+  </Step>
+  <Step title="Create the Journal Entry">
+    Click **Create Journal Entry** to generate the accounting entry for the net settlement amount. The journal entry links back to the FnF statement. When the journal entry is submitted, the FnF status changes to `Paid`.
+  </Step>
+</Steps>
+
+<Note>
+The FnF statement totals are calculated as:
+- `Total Payable Amount` = sum of all payable rows
+- `Total Receivable Amount` = sum of all receivable rows + total asset recovery cost
+- The journal entry books the net difference (payable minus receivable) against the payroll payable account.
+</Note>
+
+## Marking an employee as Left or Relieved
+
+Frappe HR uses two status values for departed employees:
+
+| Status | When to use |
+|---|---|
+| `Left` | The employee has left but the relieving process is not complete (used internally by cross-company transfers) |
+| `Relieved` | The full offboarding process is complete and the employee is formally relieved |
+
+To mark an employee as relieved:
+
+1. Open the Employee record.
+2. In the **Exit** section, set the **Relieving Date**.
+3. Change **Status** to `Relieved`.
+4. Save the record.
+
+<Tip>
+Complete the Employee Separation checklist and submit the Full & Final Statement before changing the status to `Relieved`. This ensures all offboarding tasks and financial settlements are on record.
+</Tip>
+
+## Frequently asked questions
+
+<Accordion title="Does cancelling an Employee Separation automatically relieve the employee?">
+No. Cancelling the separation document only deletes the Project and Tasks. You must manually update the Employee status and relieving date.
+</Accordion>
+
+<Accordion title="Can the FnF be created before the employee's last day?">
+Yes, you can create and save it as a draft. However, it requires a relieving date to be set on the Employee record before saving. Submission requires all rows to be settled and all assets to be returned.
+</Accordion>
+
+<Accordion title="What happens if the exit questionnaire email cannot be delivered?">
+Frappe HR shows a summary message listing the employees for whom the email succeeded and those for whom it failed due to a missing email address. The `questionnaire_email_sent` flag is only set for successful deliveries.
+</Accordion>

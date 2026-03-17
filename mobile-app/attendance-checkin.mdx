@@ -1,0 +1,103 @@
+---
+title: "Attendance and check-in"
+description: "Check in and out from your mobile device, view attendance history, and manage shift assignments in Frappe HR."
+---
+
+The Attendance section of the mobile app provides a check-in/check-out panel on the home screen, an attendance calendar, shift management, and a full history of Employee Checkin logs.
+
+## Enabling mobile check-in
+
+Before employees can check in from the app, an administrator must enable the feature:
+
+1. Go to **HR Settings** in the Frappe HR desk interface.
+2. Enable **Allow Employee Checkin from Mobile App**.
+3. Optionally, enable **Allow Geolocation Tracking** to capture GPS coordinates on each check-in.
+
+## Checking in and out
+
+When mobile check-in is enabled, the home screen shows a **Check In** or **Check Out** button based on your last log entry.
+
+<Steps>
+  <Step title="Tap Check In or Check Out">
+    The button label reflects the expected next action. If your last log was a check-in, the button shows **Check Out**, and vice versa.
+  </Step>
+  <Step title="Review the confirmation sheet">
+    A bottom sheet appears showing the current timestamp. If geolocation tracking is enabled, the sheet also displays your current latitude and longitude along with an embedded map preview.
+  </Step>
+  <Step title="Confirm the log">
+    Tap **Confirm Check In** or **Confirm Check Out**. The app creates an **Employee Checkin** record with your employee ID, log type (`IN` or `OUT`), timestamp, and coordinates.
+  </Step>
+</Steps>
+
+<Info>
+Geolocation is fetched using the browser's native `navigator.geolocation` API. The employee must grant location permission to the browser or installed PWA when prompted.
+</Info>
+
+## Geolocation capture
+
+When **Allow Geolocation Tracking** is enabled, each checkin record stores:
+
+| Field | Description |
+|---|---|
+| `latitude` | GPS latitude in decimal degrees |
+| `longitude` | GPS longitude in decimal degrees |
+| `log_type` | `IN` or `OUT` |
+| `time` | Timestamp of the check-in |
+
+The coordinates are stored on the **Employee Checkin** doctype and can be reviewed in the desk interface. They are not used to restrict check-ins to a specific location unless additional validation is configured via custom scripts.
+
+## Viewing check-in history
+
+The home screen shows the time and type of your most recent log. To view the full history:
+
+1. Tap the **View List** link next to your last log on the home screen, or
+2. Navigate to **Attendance** and browse the checkin list.
+
+You can filter the check-in history by **Log Type** (`IN` or `OUT`) and by **Shift Type**.
+
+## Attendance dashboard
+
+The Attendance tab shows:
+
+- An **Attendance Calendar** with a colour-coded view of your attendance records for the current month
+- A **Request Attendance** button for submitting regularisation requests
+- Recent attendance requests
+- Upcoming shifts
+- Recent shift requests
+
+## Attendance requests
+
+If you were absent or your attendance was not marked automatically, you can submit an **Attendance Request** to regularise it.
+
+<Steps>
+  <Step title="Tap Request Attendance">
+    From the attendance dashboard or the home screen quick links, tap **Request Attendance**.
+  </Step>
+  <Step title="Set the date range">
+    Enter the **From Date** and **To Date** for the period you need to regularise.
+  </Step>
+  <Step title="Enter the reason">
+    Provide a reason for the missed attendance. Toggle **Half Day** if applicable.
+  </Step>
+  <Step title="Submit">
+    Submit the request. It will be sent to your attendance approver for review.
+  </Step>
+</Steps>
+
+## Shift management
+
+The attendance dashboard also surfaces your upcoming shifts and allows you to request new shifts.
+
+- **Upcoming Shifts** — lists active shift assignments with their timing and dates
+- **Request a Shift** — opens the Shift Request form to request a shift change
+- **Recent Shift Requests** — shows the status of your recent shift requests
+
+## How check-in logs map to attendance records
+
+Employee Checkin records created via the mobile app are raw logs. They are converted to **Attendance** records by the **Process Attendance After Shift Change** background job, which runs according to your shift configuration.
+
+The job pairs `IN` and `OUT` logs to determine working hours, applies late entry and early exit rules defined on the **Shift Type**, and marks the attendance status (`Present`, `Absent`, `Half Day`, etc.).
+
+<Tip>
+If your attendance has not been marked after checking in, ask your HR administrator to verify that your **Shift Assignment** is active and that the background job has run for that date.
+</Tip>

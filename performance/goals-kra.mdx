@@ -1,0 +1,114 @@
+---
+title: "Goals and KRAs"
+description: "Set up Key Result Areas for your organisation and create individual goals for employees that automatically drive appraisal scores."
+---
+
+Frappe HR separates performance expectations into two levels: **KRAs** (Key Result Areas) define what the organisation considers important for a role, while **Goals** are the specific, time-bound targets an individual employee commits to within a review period.
+
+## Key Result Areas (KRAs)
+
+A KRA is a short, named competency or responsibility area — for example "Product Delivery", "Customer Satisfaction", or "Team Development". KRAs are standalone master records that are referenced in Appraisal Templates and on Goal documents.
+
+### Creating a KRA
+
+Go to **HR > Performance > KRA** and click **New**.
+
+| Field | Description |
+| --- | --- |
+| **Title** | The name of the KRA. Must be unique. |
+| **Description** | Optional detail about what the KRA covers. |
+
+KRAs are organisation-wide records — the same KRA can appear in multiple Appraisal Templates with different weightages depending on the designation.
+
+## Goals
+
+Goals are individual performance targets owned by a specific employee. They are stored as a nested set (tree), so you can create sub-goals under a parent goal to break down larger objectives.
+
+Goals use the naming series `HR-GOAL-{YYYY}-{####}`.
+
+### Goal fields
+
+| Field | Description |
+| --- | --- |
+| **Goal** | The title of the goal. Required. |
+| **Employee** | The employee who owns the goal. Set once and cannot be changed after creation. |
+| **Progress** | Completion percentage from 0 to 100. Read-only on group goals (calculated from child goals). |
+| **Status** | Derived automatically from progress. See [Goal status](#goal-status) below. |
+| **Start Date** | When work on the goal begins. Defaults to the cycle start date. |
+| **End Date** | Due date for the goal. Defaults to the cycle end date. |
+| **Appraisal Cycle** | Links the goal to a cycle so it contributes to the appraisal score. Set once; inherited by child goals. |
+| **KRA** | The KRA this goal is aligned with. Required when a cycle is set; inherited by child goals. |
+| **Parent Goal** | Optional. Makes this goal a sub-goal of another goal. |
+| **Is Group** | Check to create a container goal whose progress is the average of its children. |
+| **Description** | Rich-text detail about the goal. |
+
+### Goal status
+
+Status is set automatically based on progress and cannot be edited directly:
+
+| Status | Condition |
+| --- | --- |
+| **Pending** | Progress is 0% |
+| **In Progress** | Progress is between 1% and 99% |
+| **Completed** | Progress is 100% |
+| **Archived** | Manually archived; does not contribute to the KRA score |
+| **Closed** | Manually closed; progress is frozen |
+
+<Note>
+Archived goals are excluded from KRA score calculations. Use **Archived** to remove a goal from scoring without deleting it.
+</Note>
+
+### Creating a goal
+
+<Steps>
+  <Step title="Open the Goal list">
+    Go to **HR > Performance > Goal** and click **New**, or use the Goal tree view for a visual overview.
+  </Step>
+  <Step title="Fill in the employee and dates">
+    Select the **Employee** and set **Start Date** and **End Date**. These default to the linked appraisal cycle's dates.
+  </Step>
+  <Step title="Link to a cycle and KRA">
+    Select the **Appraisal Cycle** and then the **KRA** the goal falls under. Linking to a cycle is what causes the goal's progress to update the appraisal score automatically.
+  </Step>
+  <Step title="Save and update progress">
+    Save the goal. As work progresses, update the **Progress** field (0–100). You can also use the **Update Progress** quick action from the list view.
+  </Step>
+</Steps>
+
+## How goals drive appraisal scores
+
+When the Appraisal Cycle uses the **Automated Based on Goal Progress** evaluation method, the system calculates a score for each KRA as follows:
+
+1. For each KRA on the appraisal, query all non-archived, top-level goals linked to that KRA, that employee, and that cycle.
+2. Calculate the average progress across those goals — this becomes the **Goal Completion %** for the KRA.
+3. Multiply Goal Completion % by the KRA's weightage on the appraisal: `Goal Score = (Goal Completion % × Weightage) / 100`
+4. Sum all KRA goal scores to produce the **Goal Score Percentage**.
+5. Convert to a score out of 5: `Total Score = Goal Score Percentage / 20`
+
+This score is recalculated automatically every time a Goal is saved or deleted.
+
+<Tip>
+For the KRA score to update in real time, make sure each Goal is linked to both an **Appraisal Cycle** and a **KRA**. Goals without a cycle link do not affect appraisal scores.
+</Tip>
+
+## Nested (sub) goals
+
+Goals support a parent–child hierarchy. A group goal's progress is the average of its active children. Rules for nested goals:
+
+- A child goal must belong to the same employee as its parent.
+- A child goal must be aligned to the same KRA as its parent.
+- A child goal must belong to the same Appraisal Cycle as its parent.
+- If you change the KRA on a group goal, all child goals are updated automatically.
+
+Only top-level (non-child) goals contribute to the KRA score calculation on the Appraisal.
+
+## Self-rating vs manager rating
+
+The Appraisal document has two evaluation paths depending on the cycle's KRA Evaluation Method:
+
+| Path | Description |
+| --- | --- |
+| **Automated** (default) | The **KRA vs Goals** table on the appraisal is read-only and populated from goal progress. The employee cannot manually enter scores. |
+| **Manual Rating** | The **Goals** table is editable. The reviewer enters a direct score (out of 5) for each KRA. Weightages must still total 100%. |
+
+In both cases the KRA weightages must add up to 100%, otherwise the document cannot be saved.

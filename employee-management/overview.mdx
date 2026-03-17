@@ -1,0 +1,60 @@
+---
+title: "Employee management overview"
+description: "A guide to managing the complete employee lifecycle in Frappe HR, from onboarding through transfers and separation."
+---
+
+Frappe HR models every stage of the employee lifecycle as a set of linked doctypes. Whether you are bringing on a new hire, moving someone to a different department, or processing a final settlement, each action is tracked, auditable, and reversible.
+
+## Lifecycle stages
+
+The employee lifecycle in Frappe HR moves through four broad stages:
+
+1. **Onboarding** — A new hire completes structured activities before their employee record is created.
+2. **Active employment** — The employee profile holds personal details, employment terms, leave settings, and salary information.
+3. **Transfers and promotions** — Changes to department, designation, grade, or company are recorded with full property history.
+4. **Separation** — An offboarding checklist, exit interview, and Full & Final Statement conclude the employment relationship.
+
+## Key doctypes
+
+| Doctype | Purpose |
+|---|---|
+| `Employee` | Central record for all employee data |
+| `Employee Onboarding` | Tracks pre-joining activities and creates the Employee record |
+| `Employee Onboarding Template` | Reusable activity checklist for onboarding |
+| `Employee Transfer` | Records a change of department, designation, branch, or company |
+| `Employee Promotion` | Records a change in grade or salary with an effective date |
+| `Employee Property History` | Child table storing before/after snapshots for transfers and promotions |
+| `Employee Separation` | Tracks offboarding activities via an activity checklist |
+| `Employee Separation Template` | Reusable activity checklist for offboarding |
+| `Exit Interview` | Captures the exit discussion outcome and questionnaire |
+| `Full and Final Statement` | Settles outstanding payables, receivables, and assets on exit |
+
+## Section pages
+
+<CardGroup cols={2}>
+  <Card title="Employee profile" icon="user" href="/employee-management/employee-profile">
+    Create and manage employee records including personal info, employment details, and approvers.
+  </Card>
+  <Card title="Employee onboarding" icon="door-open" href="/employee-management/onboarding">
+    Set up onboarding templates, assign activities, and auto-create the Employee record on completion.
+  </Card>
+  <Card title="Transfers and promotions" icon="arrows-left-right" href="/employee-management/transfers-promotions">
+    Move employees across departments or companies and revise salary grades with full history tracking.
+  </Card>
+  <Card title="Separation and exit" icon="right-from-bracket" href="/employee-management/separation-exit">
+    Manage offboarding checklists, exit interviews, and Full & Final Statements.
+  </Card>
+</CardGroup>
+
+## How the lifecycle connects
+
+The doctypes are linked so that actions flow naturally from one stage to the next:
+
+- A submitted **Job Offer** can be used to create an **Employee Onboarding** document.
+- When all mandatory onboarding activities are complete, the onboarding document creates an **Employee** record.
+- During active employment, **Employee Transfer** and **Employee Promotion** documents update the Employee record in place and write rows to the internal work history.
+- When the employee leaves, an **Employee Separation** document coordinates offboarding tasks, an **Exit Interview** captures the conversation, and a **Full and Final Statement** settles dues.
+
+<Info>
+All boarding documents (onboarding and separation) automatically create a **Project** with individual **Tasks** for each activity. This means you can track progress through the standard Frappe project interface and assign tasks to specific users or roles.
+</Info>

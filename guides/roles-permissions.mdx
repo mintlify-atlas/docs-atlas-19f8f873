@@ -1,0 +1,116 @@
+---
+title: "Roles and permissions"
+description: "Understand the built-in HR roles, how to assign them to users, and how to configure approver roles per department."
+---
+
+Frappe HR uses the Frappe Framework role-based permission system. Each user is assigned one or more roles, and each role grants read, write, create, submit, cancel, and amend permissions on specific doctypes.
+
+## Built-in roles
+
+<CardGroup cols={2}>
+  <Card title="HR Manager" icon="user-tie">
+    Full access to all HR and payroll doctypes. Can modify HR Settings and Payroll Settings. Assigned to HR administrators responsible for running payroll, managing employees, and approving escalations.
+  </Card>
+  <Card title="HR User" icon="user">
+    Read and limited write access to HR doctypes. Can view HR Settings but cannot modify them. Suitable for HR staff who process day-to-day HR operations.
+  </Card>
+  <Card title="Leave Approver" icon="calendar-check">
+    Permission to approve or reject Leave Application documents. Does not grant general HR access. Assigned to managers and team leads.
+  </Card>
+  <Card title="Expense Approver" icon="receipt">
+    Permission to approve or reject Expense Claim documents. Does not grant general HR access. Assigned to managers and finance team members.
+  </Card>
+  <Card title="Employee Self Service" icon="id-card">
+    Allows employees to submit leave applications, expense claims, and view their own salary slips. The standard role for all regular employees in the system.
+  </Card>
+  <Card title="Employee" icon="person">
+    Base role for all employees. Grants read-only access to reference data such as holiday lists and HR Settings. Typically combined with Employee Self Service.
+  </Card>
+</CardGroup>
+
+## Assigning roles to users
+
+<Steps>
+  <Step title="Open the user record">
+    Go to **Settings → User** and open the user you want to configure.
+  </Step>
+  <Step title="Navigate to the Roles table">
+    Scroll down to the **Roles** section on the user form.
+  </Step>
+  <Step title="Add roles">
+    Click **Add Row** and select the role to assign. Repeat for each required role.
+  </Step>
+  <Step title="Save">
+    Click **Save**. Role changes take effect on the user's next login or page refresh.
+  </Step>
+</Steps>
+
+<Tip>
+Avoid assigning the **System Manager** role to regular HR staff. System Manager grants unrestricted access to all doctypes and settings. Use **HR Manager** instead.
+</Tip>
+
+## Department-level leave approver
+
+Frappe HR supports assigning a default leave approver at the department level so that employees do not need to select an approver each time they submit a leave application.
+
+<Steps>
+  <Step title="Open the department record">
+    Go to **HR → Departments** and open the relevant department.
+  </Step>
+  <Step title="Set the leave approver">
+    In the **Leave Approver** field, select the user who should approve leave applications for this department.
+  </Step>
+  <Step title="Save">
+    Click **Save**. When an employee in this department submits a leave application, the approver field is pre-filled automatically.
+  </Step>
+</Steps>
+
+<Note>
+If **Leave Approver Mandatory In Leave Application** is enabled in HR Settings, employees must have a valid approver assigned either at the department level or selected manually before they can submit.
+</Note>
+
+## Department-level expense approver
+
+<Steps>
+  <Step title="Open the department record">
+    Go to **HR → Departments** and open the relevant department.
+  </Step>
+  <Step title="Set the expense approver">
+    In the **Expense Approver** field, select the user who should approve expense claims for this department.
+  </Step>
+  <Step title="Save">
+    Click **Save**. When an employee in this department creates an expense claim, the approver field is pre-filled.
+  </Step>
+</Steps>
+
+## Preventing self-approval
+
+To prevent managers from approving their own requests even when they hold the Leave Approver or Expense Approver role:
+
+- Enable **Prevent self approval for leaves even if user has permissions** in HR Settings → Leaves tab.
+- Enable **Prevent self approval for expense claims even if user has permissions** in HR Settings → Expenses tab.
+
+With these settings enabled, the system blocks approval by the same user who submitted the document, regardless of their role.
+
+## Multi-level approval workflows
+
+For organizations that require more than one level of approval, Frappe Framework's built-in **Workflow** engine can be applied to Leave Application and Expense Claim doctypes.
+
+<Steps>
+  <Step title="Create a workflow">
+    Go to **Settings → Workflow** and create a new workflow for the **Leave Application** doctype.
+  </Step>
+  <Step title="Define states">
+    Add states such as `Draft`, `Pending Manager Approval`, `Pending HR Approval`, and `Approved`.
+  </Step>
+  <Step title="Define transitions">
+    Create transition rules that specify which role can move the document from one state to the next.
+  </Step>
+  <Step title="Activate the workflow">
+    Enable the workflow. The standard submit/approve buttons are replaced by your custom workflow action buttons.
+  </Step>
+</Steps>
+
+<Warning>
+Activating a workflow on Leave Application or Expense Claim overrides the default single-approver flow. Test workflows in a staging environment before deploying to production.
+</Warning>

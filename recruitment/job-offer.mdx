@@ -1,0 +1,126 @@
+---
+title: "Job offers"
+description: "Create formal offer letters, manage offer terms, track acceptance, and trigger employee onboarding from an accepted offer."
+---
+
+Once a Job Applicant has cleared all interview rounds, HR creates a **Job Offer** to formalise the employment terms. The Job Offer is a submittable document that generates a printable offer letter and tracks whether the candidate accepts or declines.
+
+## Creating a job offer
+
+<Steps>
+  <Step title="Navigate to Job Offer">
+    Go to **HR > Recruitment > Job Offer** and click **New**, or use the **Create Job Offer** button from the Job Applicant record.
+  </Step>
+  <Step title="Link the applicant">
+    Select the **Job Applicant**. The following fields are fetched automatically:
+    - **Applicant Name** — from the Job Applicant record
+    - **Applicant Email Address** — from the Job Applicant record
+    - **Designation** — from the Job Applicant record (if set)
+  </Step>
+  <Step title="Set offer details">
+    | Field | Description |
+    |---|---|
+    | **Offer Date** | Date the offer is being made (required) |
+    | **Designation** | Role being offered (required) |
+    | **Company** | Hiring company (required) |
+    | **Status** | Starts as `Awaiting Response` |
+  </Step>
+  <Step title="Add offer terms">
+    Use the **Job Offer Terms** table to list the specific terms of the offer (salary, bonus, joining date, etc.). Select a **Job Offer Term Template** to pre-populate the table with a standard set of terms.
+  </Step>
+  <Step title="Add terms and conditions">
+    Select a **Terms and Conditions** document in the **Select Terms and Conditions** field. The full text is copied into the **Terms and Conditions** field and will be included in the printed offer letter.
+  </Step>
+  <Step title="Submit the offer">
+    Submit the document to lock it. Once submitted, the status can still be updated (the `status` field is marked `allow_on_submit`).
+  </Step>
+</Steps>
+
+<Warning>
+Only one active (non-cancelled) Job Offer can exist per Job Applicant. Attempting to create a second offer for the same applicant raises a validation error.
+</Warning>
+
+## Vacancy validation
+
+When saving a Job Offer, the system checks the active Staffing Plan for the designation and company (if **Check Vacancies** is enabled in HR Settings). If all planned vacancies are already covered by existing submitted offers, saving is blocked.
+
+<Note>
+Disable **Check Vacancies** in **HR Settings** if you want to create offers without a Staffing Plan constraint.
+</Note>
+
+## Job Offer Term Template
+
+A **Job Offer Term Template** stores a reusable set of offer terms (rows in the offer terms table). Select a template in the **Job Offer Term Template** field to pre-fill the **Job Offer Terms** table, then adjust individual values as needed.
+
+Common offer term entries include:
+
+- Base salary
+- Performance bonus
+- Health insurance allowance
+- Joining bonus
+- Notice period
+- Probation period
+
+## Generating and sending the offer letter
+
+The Job Offer supports a dedicated **Job Offer** print format. To generate the offer letter:
+
+1. Open the submitted Job Offer
+2. Click **Print** and select the **Job Offer** print format
+3. Use the **Letter Head** and **Print Heading** fields in the **Printing Details** section to apply your company branding
+
+To send the letter by email, use the **Email** button on the toolbar and address it to the applicant's email address (pre-filled from the Job Applicant).
+
+## Offer statuses
+
+| Status | Meaning |
+|---|---|
+| **Awaiting Response** | Offer sent; waiting for candidate's reply |
+| **Accepted** | Candidate has accepted the offer |
+| **Rejected** | Candidate has declined the offer |
+| **Cancelled** | Offer was withdrawn or the document was discarded |
+
+When the Job Offer status is changed to **Accepted** or **Rejected**, the linked Job Applicant's status is updated automatically by the `on_change` hook.
+
+## Triggering employee onboarding
+
+An accepted Job Offer can be converted into a new Employee record directly.
+
+<Steps>
+  <Step title="Open the accepted Job Offer">
+    Navigate to the Job Offer with status **Accepted**.
+  </Step>
+  <Step title="Create the Employee">
+    Click **Create Employee** in the document toolbar. The system maps:
+    - **Applicant Name** → **Employee Name**
+    - **Offer Date** → **Scheduled Confirmation Date**
+    - **Email Address** → **Personal Email**
+
+    A new Employee record opens in edit mode with these values pre-filled.
+  </Step>
+  <Step title="Complete and save the Employee record">
+    Fill in any remaining required fields (date of joining, department, etc.) and save. The Employee record is now active and the onboarding workflow can be triggered.
+  </Step>
+</Steps>
+
+<Tip>
+After the Employee record is created from a Job Offer, the Job Applicant record and Job Offer are automatically linked to the new Employee. The Employee dashboard shows the originating Job Applicant.
+</Tip>
+
+## Job Offer fields reference
+
+| Field | Type | Notes |
+|---|---|---|
+| `job_applicant` | Link | Required; only non-rejected applicants shown |
+| `applicant_name` | Data | Read-only; fetched from applicant |
+| `applicant_email` | Data | Read-only; fetched from applicant |
+| `offer_date` | Date | Required |
+| `designation` | Link | Required; fetched from applicant if empty |
+| `company` | Link | Required |
+| `status` | Select | Awaiting Response / Accepted / Rejected / Cancelled |
+| `job_offer_term_template` | Link | Pre-fill offer terms from a template |
+| `offer_terms` | Table | Individual offer term rows |
+| `select_terms` | Link | Terms and Conditions document |
+| `terms` | Text Editor | Full terms and conditions text |
+| `letter_head` | Link | Company letter head for printing |
+| `select_print_heading` | Link | Print heading override |

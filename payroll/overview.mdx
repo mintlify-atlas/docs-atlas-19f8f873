@@ -1,0 +1,70 @@
+---
+title: "Payroll overview"
+description: "Understand the end-to-end payroll processing flow in Frappe HR, from salary components to payment."
+---
+
+Frappe HR provides a complete payroll engine that handles salary computation, tax deductions, loan repayments, and accounting entries. The payroll module integrates directly with ERPNext's General Ledger to post journal entries when payroll is processed.
+
+## Payroll processing flow
+
+Every payroll run follows the same sequence:
+
+<Steps>
+  <Step title="Define salary components">
+    Create **Salary Components** for each earnings and deduction type (Basic, HRA, PF, Professional Tax, and so on). Components can have fixed amounts or Python-expression formulas.
+  </Step>
+  <Step title="Build a salary structure">
+    A **Salary Structure** combines multiple components into a reusable template. Each structure is tied to a company, a currency, and a payroll frequency.
+  </Step>
+  <Step title="Assign the structure to employees">
+    A **Salary Structure Assignment** links a salary structure to an employee with a specific base salary and an effective date. You can do bulk assignments by department, designation, or grade.
+  </Step>
+  <Step title="Create a payroll entry">
+    A **Payroll Entry** targets a company, date range, and optionally a department. It pulls in all employees whose salary structures match the selected frequency.
+  </Step>
+  <Step title="Generate salary slips">
+    The payroll entry creates a **Salary Slip** for each employee. Slips are computed using formulas, attendance data, leave deductions, and any additional salaries.
+  </Step>
+  <Step title="Submit and post accounting entries">
+    Submitting the payroll entry posts journal entries to the General Ledger: salary expense accounts are debited and the payroll payable account is credited.
+  </Step>
+  <Step title="Make payment">
+    Record payment against the payroll payable account through a bank transfer or journal entry to clear the liability.
+  </Step>
+</Steps>
+
+## ERPNext accounting integration
+
+Frappe HR uses ERPNext's accounting infrastructure for all financial postings. When a payroll entry is submitted:
+
+- **Expense entries** are created per salary component, debiting the configured expense account.
+- **Payroll payable** is credited as a liability until the payment is recorded.
+- **Loan repayments** are settled against the loan principal accounts.
+- Cost center and department dimensions can be applied to each salary component account.
+
+<Info>
+The **Default Payroll Payable Account** must be configured in your Company master before processing payroll. The account type must be set to **Payable**.
+</Info>
+
+## Module pages
+
+<CardGroup cols={2}>
+  <Card title="Salary structures" icon="layer-group" href="/payroll/salary-structure">
+    Define salary components with formulas, build structures, and assign them to employees.
+  </Card>
+  <Card title="Salary slips" icon="file-invoice" href="/payroll/salary-slip">
+    Understand how slips are computed, how to view the income tax breakup, and how to print them.
+  </Card>
+  <Card title="Payroll entry" icon="calendar-check" href="/payroll/payroll-entry">
+    Run payroll for a period, configure payroll periods, and handle corrections.
+  </Card>
+  <Card title="Additional salary" icon="circle-plus" href="/payroll/additional-salary">
+    Process one-time or recurring supplemental payments, incentives, and arrears.
+  </Card>
+  <Card title="Taxation" icon="percent" href="/payroll/taxation">
+    Configure income tax slabs, manage employee declarations, and understand how tax is projected across the year.
+  </Card>
+  <Card title="Gratuity" icon="hand-holding-dollar" href="/payroll/gratuity">
+    Set up gratuity rules and generate gratuity records for departing employees.
+  </Card>
+</CardGroup>

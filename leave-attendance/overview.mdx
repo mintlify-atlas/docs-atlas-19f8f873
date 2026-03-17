@@ -1,0 +1,80 @@
+---
+title: "Leave & attendance overview"
+description: "How Frappe HR models leave entitlements, absence tracking, and shift-based attendance in one integrated system."
+---
+
+Frappe HR's leave and attendance system covers the full lifecycle of time-off management — from defining what kinds of leave exist, to allocating balances, processing applications, and automatically deriving attendance from employee check-in logs.
+
+## How the system fits together
+
+Leave management and attendance are separate concerns that share data:
+
+- **Leave management** tracks balances and approved absences using a ledger model. Every allocation, application, and encashment creates a Leave Ledger Entry.
+- **Attendance** tracks whether an employee was present, absent, or on leave for each working day. Attendance records are created manually, via bulk upload, or automatically from shift check-in logs.
+
+The two systems are linked when a leave application is approved — an attendance record with status **On Leave** is created for each day of the approved leave.
+
+## Leave setup sequence
+
+Complete setup in this order before employees can apply for leave.
+
+<Steps>
+  <Step title="Create leave types">
+    Define each category of leave — Annual, Sick, Compensatory, and so on — with rules for carry-forward, encashment, and accrual. See [Leave types](/leave-attendance/leave-types).
+  </Step>
+  <Step title="Create a leave period">
+    A Leave Period defines the date range (typically a calendar or financial year) over which allocations are valid. Go to **HR > Leave Period > New**.
+  </Step>
+  <Step title="Create a leave policy">
+    A Leave Policy groups leave types with their annual entitlement quantities. One policy can be reused across many employees. See [Leave policies](/leave-attendance/leave-policy).
+  </Step>
+  <Step title="Assign the leave policy">
+    A Leave Policy Assignment links a policy to one or more employees for a specific leave period. This triggers automatic Leave Allocation creation.
+  </Step>
+  <Step title="Verify leave allocations">
+    Each Leave Allocation record holds the actual balance for one employee, one leave type, and one period. Review allocations before employees start applying.
+  </Step>
+  <Step title="Employees submit leave applications">
+    Once allocations exist, employees apply for leave via the Leave Application form or the mobile PWA. See [Leave applications](/leave-attendance/leave-application).
+  </Step>
+</Steps>
+
+## Attendance setup sequence
+
+<Steps>
+  <Step title="Create a holiday list">
+    Define weekly off days and public holidays. See [Holiday lists](/leave-attendance/holiday-list).
+  </Step>
+  <Step title="Assign the holiday list">
+    Attach the holiday list to employees or departments so attendance calculations respect non-working days.
+  </Step>
+  <Step title="Configure shifts (optional)">
+    If your organization uses shift-based work, create Shift Types with timing and auto-attendance rules, then assign employees to shifts. See [Shift management](/leave-attendance/shift-management).
+  </Step>
+  <Step title="Mark attendance">
+    Attendance can be marked manually, uploaded in bulk via CSV, or generated automatically from Employee Checkin logs. See [Marking attendance](/leave-attendance/attendance-marking).
+  </Step>
+</Steps>
+
+## Section pages
+
+<CardGroup cols={2}>
+  <Card title="Leave types" icon="tag" href="/leave-attendance/leave-types">
+    Configure carry-forward, encashment, accrual, and LWP rules for each leave category.
+  </Card>
+  <Card title="Leave policies" icon="file-lines" href="/leave-attendance/leave-policy">
+    Bundle leave entitlements into reusable policies and assign them to employees in bulk.
+  </Card>
+  <Card title="Leave applications" icon="paper-plane" href="/leave-attendance/leave-application">
+    Submit, approve, and track leave requests including half-days, compensatory leave, and encashment.
+  </Card>
+  <Card title="Marking attendance" icon="clipboard-check" href="/leave-attendance/attendance-marking">
+    Manual entry, bulk CSV upload, and biometric device integration via Employee Checkin.
+  </Card>
+  <Card title="Shift management" icon="clock" href="/leave-attendance/shift-management">
+    Create shift types, assign employees, and let auto-attendance handle the rest.
+  </Card>
+  <Card title="Holiday lists" icon="calendar-days" href="/leave-attendance/holiday-list">
+    Define weekly offs and public holidays and attach them to employees or departments.
+  </Card>
+</CardGroup>

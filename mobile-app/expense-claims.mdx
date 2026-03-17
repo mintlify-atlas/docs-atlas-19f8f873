@@ -1,0 +1,85 @@
+---
+title: "Expense claims on mobile"
+description: "Submit and track expense claims, attach receipts, and manage employee advances from the Frappe HR mobile app."
+---
+
+The Expense Claims section of the mobile app lets employees submit reimbursement requests, attach photos of receipts, link employee advances, and track the status of each claim through the approval workflow.
+
+## Expense claims dashboard
+
+Navigate to the **Expense Claims** tab from the bottom navigation bar. The dashboard shows:
+
+- An expense claim summary (total claimed, pending reimbursement)
+- A **Claim an Expense** button
+- Recent expense claims
+- Employee advance balances with a link to the full advance list
+
+## Submitting an expense claim
+
+<Steps>
+  <Step title="Open the expense claim form">
+    Tap **Claim an Expense** on the dashboard or use the quick link on the home screen.
+  </Step>
+  <Step title="Add expense line items">
+    In the **Expenses** tab, tap **Add Expense** to add each line item. For each item, enter:
+    - **Expense Date**
+    - **Expense Type** (links to an Expense Type doctype)
+    - **Description**
+    - **Amount**
+    - **Sanctioned Amount** (defaults to the claimed amount; may be adjusted by the approver)
+  </Step>
+  <Step title="Apply taxes (optional)">
+    Switch to the **Taxes** tab if your expense claim includes taxes or charges. Add applicable tax rows with the rate or fixed amount.
+  </Step>
+  <Step title="Link employee advances (optional)">
+    Switch to the **Advances** tab to view any outstanding employee advances. Toggle the advances you want to offset against this claim. The app automatically allocates advance amounts and updates the grand total.
+  </Step>
+  <Step title="Review totals">
+    Switch to the **Totals** tab to review the **Total Claimed Amount**, **Total Taxes and Charges**, **Total Advance Amount**, and **Grand Total**.
+  </Step>
+  <Step title="Set the expense approver">
+    The approver is pre-filled from your department configuration. You can change it if needed.
+  </Step>
+  <Step title="Attach receipts">
+    Tap the attachment icon to attach photos of receipts directly from your device camera or photo library. Attachments are stored against the Expense Claim document.
+  </Step>
+  <Step title="Submit">
+    Tap **Submit** to send the claim for approval. The claim status changes to **Submitted** and the approver receives a notification.
+  </Step>
+</Steps>
+
+<Note>
+Administrative fields such as naming series, task, and approval status are hidden on the mobile form when creating a new claim. They become visible when viewing an existing claim.
+</Note>
+
+## Attaching receipt photos
+
+The expense claim form includes a full attachment panel (`showAttachmentView: true`). You can attach multiple files per claim:
+
+1. Tap the **Attachments** section at the bottom of the form.
+2. Select **Camera** to take a new photo, or **Gallery** to pick an existing image.
+3. The file is uploaded and linked to the Expense Claim document.
+
+<Tip>
+Attach receipts before submitting the claim. Once the claim is submitted, editing is restricted based on your approver permissions.
+</Tip>
+
+## Tracking claim status
+
+Open a submitted claim from the **Recent Expenses** list to view its current status.
+
+| Status | Description |
+|---|---|
+| Draft | Saved but not yet submitted |
+| Submitted | Awaiting approver review |
+| Approved | Approver has sanctioned the claim |
+| Rejected | Approver has rejected the claim |
+| Paid | Finance has processed the reimbursement |
+
+You can also download a PDF copy of the claim using the **Download PDF** button on the form.
+
+## Employee advances
+
+The dashboard shows your outstanding **Employee Advance** balances. When you submit an expense claim, any unallocated advance amounts are automatically applied against the claim total, reducing the net reimbursable amount.
+
+To view the full advance list, tap **View List** in the Employee Advance Balance section.

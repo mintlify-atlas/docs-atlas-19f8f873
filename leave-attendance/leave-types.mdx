@@ -1,0 +1,93 @@
+---
+title: "Leave types"
+description: "Define leave categories with rules for carry-forward, encashment, accrual, and pay deductions."
+---
+
+A Leave Type is the master record that controls how a specific category of leave behaves. Every Leave Allocation and Leave Application references a Leave Type.
+
+Go to **HR > Leave Type > New** to create one.
+
+## Core fields
+
+| Field | Description |
+|---|---|
+| **Leave Type Name** | Unique name used across allocations and applications. |
+| **Maximum Leave Allocation Allowed per Leave Period** | Upper limit on how many days can be allocated in a single leave period. |
+| **Allow Leave Application After (Working Days)** | Minimum working days since Date of Joining before an employee can apply for this leave type. |
+| **Maximum Consecutive Leaves Allowed** | Cap on how many days can be taken in a single continuous block. |
+| **Is Carry Forward** | Unused balance rolls over to the next leave period. |
+| **Maximum Carry Forwarded Leaves** | Cap on carry-forward quantity (only relevant when **Is Carry Forward** is enabled). |
+| **Expire Carry Forwarded Leaves (Days)** | Number of days after the new period starts before carry-forwarded balance expires. |
+| **Is Leave Without Pay** | Deducts pay for each day taken. Mutually exclusive with **Is Partially Paid Leave**. |
+| **Is Partially Paid Leave** | Pay is partially deducted. Set **Fraction of Daily Salary per Leave** (e.g. `0.5` for 50% deduction). |
+| **Is Optional Leave** | Employees choose from a list of optional holidays permitted by the company. |
+| **Allow Negative Balance** | Employees can apply even if they have no remaining balance. |
+| **Allow Over Allocation** | Allows allocating more days than the number of days in the allocation period. |
+| **Include Holidays Within Leaves as Leaves** | When enabled, public holidays that fall inside a leave block are counted as leave days. |
+| **Is Compensatory** | Leave earned by working on a holiday or extra day. |
+
+## Leave type categories
+
+### Earned leave (accrual)
+
+Earned leave accumulates over time rather than being granted in full at the start of a period. Enable **Is Earned Leave** and configure:
+
+| Field | Options |
+|---|---|
+| **Earned Leave Frequency** | Monthly, Quarterly, Half-Yearly, Yearly |
+| **Allocate on Day** | First Day, Last Day, Date of Joining |
+| **Rounding** | None, 0.25, 0.5, 1.0 |
+
+A background job runs on the configured frequency and adds the pro-rated entitlement to each employee's allocation.
+
+<Info>
+Earned leave accrual requires a Leave Allocation to already exist for the employee. The background job adds to the existing allocation rather than creating a new one.
+</Info>
+
+### Compensatory leave
+
+Enable **Is Compensatory** to mark a leave type as compensatory. Employees submit a Compensatory Leave Request after working on a holiday or rest day. When the request is approved, a Leave Allocation is created for that employee.
+
+### Optional leave
+
+Enable **Is Optional Leave** when the company offers a list of optional holidays from which employees can pick a limited number to observe. Employees apply using a Leave Application referencing the optional leave type, and the system validates that the date falls on a designated optional holiday.
+
+### Leave without pay (LWP)
+
+Enable **Is Leave Without Pay** to have the payroll system automatically deduct salary for days taken under this leave type. LWP days are factored into the Payment Days calculation in the Salary Slip.
+
+<Warning>
+**Is Leave Without Pay** and **Is Partially Paid Leave** are mutually exclusive. Enabling one disables the other.
+</Warning>
+
+## Carry-forward settings
+
+When **Is Carry Forward** is checked, a collapsible section appears with two additional controls:
+
+- **Maximum Carry Forwarded Leaves** — any balance above this cap is forfeited at period rollover.
+- **Expire Carry Forwarded Leaves (Days)** — carried-forward days expire this many days into the new period. After expiry the balance is zeroed out via a Leave Ledger Entry.
+
+## Leave encashment settings
+
+To allow employees to cash out unused leave balance, enable **Allow Encashment** in the Encashment section.
+
+| Field | Description |
+|---|---|
+| **Allow Encashment** | Enables encashment for this leave type. |
+| **Earning Component** | The salary component (from the Salary Structure) that receives the encashment payout. |
+| **Maximum Encashable Leaves** | Hard upper limit on how many days can be encashed. |
+| **Non-Encashable Leaves** | Days that must be kept in balance and cannot be encashed. For example, with a balance of 10 and 4 non-encashable leaves, only 6 can be encashed. |
+
+<Tip>
+Set **Non-Encashable Leaves** to enforce a minimum retained balance. This is useful for policies that require employees to keep a minimum number of leave days in reserve.
+</Tip>
+
+When an employee submits a Leave Encashment document, the system calculates the payout amount based on their daily salary and creates an Additional Salary record that is picked up in the next payroll run.
+
+## Permissions
+
+| Role | Access |
+|---|---|
+| HR Manager | Full create, edit, delete |
+| HR User | Full create, edit, delete |
+| Employee | Read only |

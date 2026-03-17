@@ -1,0 +1,101 @@
+---
+title: "HR settings"
+description: "Configure system-wide HR settings for employee management, leaves, expenses, attendance, and recruitment."
+---
+
+HR Settings is a single-instance document that controls system-wide defaults for all HR operations. It is accessible to HR Managers and System Managers.
+
+**How to access:** HR module → Settings → HR Settings
+
+<Info>
+HR Settings can be read by all employees but can only be modified by users with the **HR Manager** or **System Manager** role.
+</Info>
+
+## Employee settings
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| **Employee Naming By** | Select | Naming Series | Controls how new employee records are named. Options: `Naming Series`, `Employee Number`, `Full Name`. |
+| **Standard Working Hours** | Float | — | The standard number of working hours per day, used in timesheet and overtime calculations. |
+| **Retirement Age (In Years)** | Data | — | The default retirement age. Used for reporting and HR planning purposes. |
+
+## Leave settings
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| **Leave Approver Mandatory In Leave Application** | Check | Enabled | When enabled, employees must select a leave approver before submitting a leave application. |
+| **Auto Leave Encashment** | Check | Disabled | Automatically creates leave encashment entries at the end of the leave period. |
+| **Prevent self approval for leaves** | Check | Disabled | Prevents a user from approving their own leave application even if they have the required role permissions. |
+| **Show Leaves Of All Department Members In Calendar** | Check | Disabled | When enabled, all employees can view leave calendars of their entire department, not just their own. |
+| **Send Leave Notification** | Check | Enabled | Enables automated email notifications when leave applications are submitted, approved, or rejected. |
+| **Leave Approval Notification Template** | Link | — | Email Template used to notify the approver when a leave application is submitted. Required when Send Leave Notification is enabled. |
+| **Leave Status Notification Template** | Link | — | Email Template used to notify the employee when their leave status changes. Required when Send Leave Notification is enabled. |
+| **Restrict Backdated Leave Application** | Check | Disabled | Prevents employees from submitting leave applications for dates in the past. |
+| **Role Allowed to Create Backdated Leave Application** | Link | — | Specific role that is exempt from the backdated leave restriction. Visible only when the restriction is enabled. |
+
+## Expense settings
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| **Expense Approver Mandatory In Expense Claim** | Check | Enabled | When enabled, an expense approver must be selected before an expense claim can be submitted. |
+| **Prevent self approval for expense claims** | Check | Disabled | Prevents a user from approving their own expense claim even if they hold the required role. |
+| **Unlink Payment on Cancellation of Employee Advance** | Check | Disabled | When enabled, payment entries linked to employee advances are automatically unlinked if the advance is cancelled. |
+
+## Shift and attendance settings
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| **Allow Multiple Shift Assignments for Same Date** | Check | Disabled | When enabled, a single employee can be assigned to more than one shift on the same date. |
+| **Allow Employee Checkin from Mobile App** | Check | Enabled | Controls whether employees can log check-in and check-out events from the Frappe HR mobile app. |
+| **Allow Geolocation Tracking** | Check | Disabled | When enabled, GPS coordinates are captured at the time of mobile check-in. |
+
+## Reminders
+
+Frappe HR sends automated reminders through scheduled tasks. The following reminder types are configured in HR Settings.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| **Birthdays** | Check | Enabled | Sends birthday reminder emails to the team. Runs daily via the scheduler. |
+| **Work Anniversaries** | Check | Enabled | Sends work anniversary reminder emails. Runs daily. |
+| **Holidays** | Check | Enabled | Sends upcoming holiday reminders. |
+| **Set frequency for holiday reminders** | Select | Weekly | Controls whether holiday reminders are sent `Weekly` or `Monthly`. |
+| **Sender** | Link | — | Email Account used as the sender for HR reminder emails. |
+| **Sender Email** | Data | — | Fetched automatically from the selected Sender account. |
+
+## Recruitment settings
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| **Check Vacancies On Job Offer Creation** | Check | Disabled | Validates that an open Job Opening with available vacancies exists before allowing a Job Offer to be created. |
+| **Send Interview Reminder** | Check | Disabled | Sends an automated reminder to the interviewer before a scheduled interview. |
+| **Interview Reminder Notification Template** | Link | — | Email Template for the interview reminder. Shown when Send Interview Reminder is enabled. |
+| **Remind Before** | Time | 00:15:00 | How far in advance to send the interview reminder. |
+| **Send Interview Feedback Reminder** | Check | Disabled | Sends a reminder to the interviewer to submit feedback after the interview. |
+| **Feedback Reminder Notification Template** | Link | — | Email Template for the feedback reminder. |
+| **Sender (Hiring)** | Link | — | Email Account used as the sender for recruitment-related emails. |
+
+## Employee exit settings
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| **Exit Questionnaire Web Form** | Link | — | Web Form used to collect exit feedback from departing employees. |
+| **Exit Questionnaire Notification Template** | Link | — | Email Template sent to the employee when they are invited to complete the exit questionnaire. |
+
+## Configuring leave notifications
+
+<Steps>
+  <Step title="Create email templates">
+    Go to **Settings → Email Template** and create two templates:
+    - One for approval requests sent to the approver
+    - One for status updates sent to the employee
+  </Step>
+  <Step title="Enable send leave notification">
+    In HR Settings, check **Send Leave Notification**.
+  </Step>
+  <Step title="Assign templates">
+    Set **Leave Approval Notification Template** and **Leave Status Notification Template** to your newly created templates.
+  </Step>
+  <Step title="Save">
+    Click **Save**. Notifications will trigger automatically when leave applications are submitted or their status changes.
+  </Step>
+</Steps>

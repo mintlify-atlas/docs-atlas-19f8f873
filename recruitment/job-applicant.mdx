@@ -1,0 +1,123 @@
+---
+title: "Job applicants"
+description: "Track job applications from any source, manage applicant statuses, and handle employee referrals."
+---
+
+A Job Applicant record captures everything about a candidate's application — their contact details, resume, cover letter, the source of their application, and their current status in the pipeline.
+
+## How applicants apply
+
+Applications can enter the system in two ways:
+
+**Via the website form** — When a Job Opening is published, candidates can submit their details through the public application form. A Job Applicant record is created automatically from the form submission.
+
+**Manual entry** — HR staff can create a Job Applicant record directly in **HR > Recruitment > Job Applicant** by clicking **New**.
+
+<Note>
+Creating a Job Applicant against a **Closed** Job Opening is not allowed. The system raises an error on insert if the linked opening has a `Closed` status.
+</Note>
+
+## Required fields
+
+| Field | Description |
+|---|---|
+| **Applicant Name** | Full name of the candidate. If left blank, it is guessed from the email address |
+| **Email Address** | Primary contact email. Used as the document name (with a numeric suffix if the same email applies again) |
+| **Status** | Current pipeline stage (see below) |
+
+## Applicant statuses
+
+Job Applicant status drives workflow routing and reporting. The available statuses are:
+
+| Status | Meaning |
+|---|---|
+| **Open** | Application received; under initial review |
+| **Replied** | HR has responded to the applicant |
+| **Hold** | Application is paused, pending a decision |
+| **Accepted** | Applicant has been selected; a Job Offer will be created |
+| **Rejected** | Application has been declined |
+
+Status updates also propagate to linked documents. When a Job Offer linked to an applicant is set to **Accepted** or **Rejected**, the Job Applicant status is updated to match automatically.
+
+## Applicant sources
+
+The **Source** field links to the **Job Applicant Source** master, letting you track where each application originated. Common sources include:
+
+- Website
+- LinkedIn
+- Indeed
+- Referral (Employee Referral)
+- Campus
+- Walk-in
+
+When the source is **Employee Referral**, a **Source Name** field appears to record the referring employee.
+
+## Employee Referral workflow
+
+Frappe HR includes a dedicated **Employee Referral** document that tracks referrals made by existing employees.
+
+<Steps>
+  <Step title="Employee submits a referral">
+    An employee submits an **Employee Referral** document nominating a candidate for a specific role.
+  </Step>
+  <Step title="Job Applicant is linked">
+    When HR creates a Job Applicant and links it to the Employee Referral in the **Employee Referral** field, the referral status updates automatically based on the applicant's progress:
+
+    | Applicant status | Referral status |
+    |---|---|
+    | Open / Replied / Hold | In Process |
+    | Accepted | Accepted |
+    | Rejected | Rejected |
+  </Step>
+</Steps>
+
+<Info>
+The **Employee Referral** field on a Job Applicant is read-only and is set by the system when a Job Applicant is created from an Employee Referral document.
+</Info>
+
+## Resume and cover letter
+
+The **Resume** section holds:
+
+- **Cover Letter** — free-text field for the candidate's covering note
+- **Resume Attachment** — file attachment for an uploaded CV
+- **Resume Link** — URL to an online profile or hosted resume
+
+## Salary expectation
+
+Record the candidate's expected compensation in the **Salary Expectation** section using **Currency**, **Lower Range**, and **Upper Range** fields.
+
+## Applicant rating
+
+HR staff can assign an **Applicant Rating** (star rating) to each applicant for quick shortlisting. This rating is visible in the list view.
+
+## Linking to interviews
+
+From a Job Applicant record, click the **Create Interview** button to schedule an interview. The system:
+
+1. Prompts you to select an **Interview Round**
+2. Validates that the round's designation matches the applicant's designation (if set)
+3. Creates a new Interview document pre-filled with the applicant's details and the round's interviewer panel
+
+You can view all interviews scheduled for an applicant in the **Interview Details** dashboard section.
+
+## Job Applicant fields reference
+
+| Field | Type | Notes |
+|---|---|---|
+| `applicant_name` | Data | Required |
+| `email_id` | Data | Required. Used as document name |
+| `phone_number` | Data | Optional |
+| `country` | Link | Optional |
+| `job_title` | Link | Links to Job Opening |
+| `designation` | Link | Fetched from Job Opening if empty |
+| `status` | Select | Open / Replied / Rejected / Hold / Accepted |
+| `source` | Link | Job Applicant Source |
+| `source_name` | Link | Visible when source is Employee Referral |
+| `employee_referral` | Link | Read-only; set by system |
+| `applicant_rating` | Rating | HR-assigned star rating |
+| `cover_letter` | Text | Free-text cover note |
+| `resume_attachment` | Attach | Uploaded CV file |
+| `resume_link` | Data | URL to online resume |
+| `lower_range` | Currency | Expected salary lower bound |
+| `upper_range` | Currency | Expected salary upper bound |
