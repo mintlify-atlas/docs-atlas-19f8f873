@@ -1,0 +1,169 @@
+{
+  "projectType": "saas",
+  "projectName": "Frappe HR",
+  "projectDescription": "Open-source, modern HR and Payroll Software built on Frappe Framework with modules for employee lifecycle, leaves, attendance, payroll, performance management, expense claims, and recruitment.",
+  "theme": "linden",
+  "primaryColor": "#141414",
+  "lightColor": "#7c7c7c",
+  "darkColor": "#c8c8c8",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "getting-started/installation",
+              "getting-started/docker-setup",
+              "getting-started/first-steps"
+            ]
+          },
+          {
+            "group": "Employee Management",
+            "pages": [
+              "employee-management/overview",
+              "employee-management/employee-profile",
+              "employee-management/onboarding",
+              "employee-management/transfers-promotions",
+              "employee-management/separation-exit"
+            ]
+          },
+          {
+            "group": "Leave & Attendance",
+            "pages": [
+              "leave-attendance/overview",
+              "leave-attendance/leave-types",
+              "leave-attendance/leave-policy",
+              "leave-attendance/leave-application",
+              "leave-attendance/attendance-marking",
+              "leave-attendance/shift-management",
+              "leave-attendance/holiday-list"
+            ]
+          },
+          {
+            "group": "Payroll",
+            "pages": [
+              "payroll/overview",
+              "payroll/salary-structure",
+              "payroll/salary-slip",
+              "payroll/payroll-entry",
+              "payroll/additional-salary",
+              "payroll/taxation",
+              "payroll/gratuity"
+            ]
+          },
+          {
+            "group": "Expense Claims",
+            "pages": [
+              "expense-claims/overview",
+              "expense-claims/expense-claim",
+              "expense-claims/employee-advance",
+              "expense-claims/travel-request"
+            ]
+          },
+          {
+            "group": "Performance Management",
+            "pages": [
+              "performance/overview",
+              "performance/appraisal-cycle",
+              "performance/goals-kra",
+              "performance/feedback",
+              "performance/appraisal-template"
+            ]
+          },
+          {
+            "group": "Recruitment",
+            "pages": [
+              "recruitment/overview",
+              "recruitment/job-opening",
+              "recruitment/job-applicant",
+              "recruitment/interview",
+              "recruitment/job-offer"
+            ]
+          },
+          {
+            "group": "Mobile App",
+            "pages": [
+              "mobile-app/overview",
+              "mobile-app/leave-management",
+              "mobile-app/attendance-checkin",
+              "mobile-app/expense-claims"
+            ]
+          },
+          {
+            "group": "Regional Settings",
+            "pages": [
+              "regional/overview",
+              "regional/india",
+              "regional/uae"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Setup & Configuration",
+            "pages": [
+              "guides/hr-settings",
+              "guides/payroll-settings",
+              "guides/roles-permissions",
+              "guides/notifications"
+            ]
+          },
+          {
+            "group": "Reports",
+            "pages": [
+              "guides/reports/hr-reports",
+              "guides/reports/payroll-reports",
+              "guides/reports/attendance-reports"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "guides/integrations/erpnext",
+              "guides/integrations/frappe-framework"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "guides/contributing/development-setup",
+              "guides/contributing/code-guidelines"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Employee Lifecycle Management (onboarding, transfers, promotions, separation)",
+    "Leave and Attendance tracking with geolocation check-in/check-out",
+    "Payroll processing with salary structures, tax slabs, and compliance",
+    "Performance Management with goals, KRAs, appraisal cycles, and feedback",
+    "Expense Claims and Employee Advances with multi-level approval workflows",
+    "Recruitment module with job openings, applicant tracking, and interviews",
+    "Shift Management with auto-attendance processing",
+    "Mobile PWA app for leaves, attendance, and expense claims",
+    "Regional payroll compliance (India, UAE)",
+    "ERPNext integration for accounting and financial operations"
+  ],
+  "publicApiSurface": [
+    "GET /api/method/hrms.api.get_current_employee_info",
+    "POST /api/method/hrms.hr.doctype.leave_application.leave_application.get_leave_balance_on",
+    "POST /api/method/hrms.hr.doctype.attendance.attendance.mark_attendance",
+    "POST /api/method/hrms.hr.doctype.employee_checkin.employee_checkin.add_log_based_on_employee_field",
+    "GET /api/method/hrms.payroll.doctype.salary_slip.salary_slip.get_salary_slip_data",
+    "POST /api/method/hrms.hr.doctype.expense_claim.expense_claim.make_bank_entry",
+    "GET /api/resource/Employee",
+    "GET /api/resource/Leave Application",
+    "GET /api/resource/Salary Slip",
+    "GET /api/resource/Expense Claim",
+    "GET /api/resource/Attendance",
+    "GET /api/resource/Job Opening"
+  ]
+}
